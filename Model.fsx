@@ -115,3 +115,19 @@ and finished(s) =
          | Clear -> return! ready()
          | _     ->  failwith("finished: unexpected message")
     }
+
+    
+//let getm = 0;;
+
+let explode s = [for c in s -> c]
+
+let rec buildList' a = function 
+    match L with
+    | ' '::cs -> buildList' cs
+    | c::cs -> (((int) c)-48)::(buildList' L)
+    | _ -> []
+
+let buildList html = buildList' (explode html)
+
+buildList "1";;
+
