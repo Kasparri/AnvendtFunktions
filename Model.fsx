@@ -100,7 +100,7 @@ and loading(url) =
          disable [takeButton;clearButton;loadButton]
          let! msg = ev.Receive()
          match msg with
-            | Web html -> printfn "Html %s" html
+            | Web html -> sticks <- makeArray html
             | Error -> return! finished("Error")
             | Cancel -> ts.Cancel()
                         return! cancelling()
@@ -139,7 +139,7 @@ and AI =
     }
 and finished(s) =
     async {
-    ansBox.text <- s
+    ansBox.Text <- s
     disable [takeButton;cancelButton]
     let! msg = ev.Receive()
     match msg with
