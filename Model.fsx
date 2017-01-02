@@ -8,7 +8,67 @@ open System
 open System.Net 
 open System.Threading 
 open System.Windows.Forms 
-open System.Drawing 
+open System.Drawing
+
+// VIEW
+
+
+
+
+let window = new Form(Text="Nim Game", Size=Size(700,700))
+
+let urlBox = new TextBox(Location=Point(10,10),Size=Size(400,25))
+
+let ansBox =
+  new TextBox(Location=Point(150,150),Size=Size(200,25))
+
+
+
+let loadButton = new Button(Location=Point(415,10),MinimumSize=Size(50,25),
+                  MaximumSize=Size(50,25),Text="Load Game")
+
+let cancelButton = new Button(Location=Point(470,10),MinimumSize=Size(50,25),
+                    MaximumSize=Size(50,25),Text="Cancel load")
+
+
+let takeButton = new Button(Location=Point(575,10),MinimumSize=Size(100,75),
+                  MaximumSize=Size(100,75),Text="Take!")
+
+let clearButton = new Button(Location=Point(575,650),MinimumSize=Size(100,25),
+                   MaximumSize=Size(100,25),Text="Clear Game")
+
+                   
+
+
+let disable bs = 
+    for b in [loadButton;takeButton;cancelButton;clearButton] do 
+        b.Enabled  <- true
+    for (b:Button) in bs do 
+        b.Enabled  <- false
+
+// Initialization
+
+
+window.Controls.Add urlBox
+window.Controls.Add loadButton
+window.Controls.Add cancelButton
+
+window.Controls.Add takeButton
+
+window.Controls.Add clearButton
+
+window.Controls.Add ansBox
+
+// Start
+
+//Async.StartImmediate (empty())
+
+//Application.Run(window) (* Mac *)
+window.Show() (* Windows *)
+
+// END OF VIEW
+
+//MODEL
 
 type AsyncEventQueue<'T>() = 
     let mutable cont = None 
@@ -34,20 +94,20 @@ type AsyncEventQueue<'T>() =
 type Message =
   | Take of (int*int) | Clear | Cancel | Web of string | Error | Cancelled 
 
-let sticks = [5;4;3]
+let mutable sticks = [5;4;3]
 
 let ev = AsyncEventQueue()
 
-let rec takeaction n h = function
-    |x::xs when h = 0 -> x-n::xs
-    |x::xs -> takeaction n (h-1) xs
-    |[] -> []
+let rec takeaction n h a = function
+    |[] -> a @ []
+    |x::xs when h=0 -> a @ (x-n)::xs
+    |x::xs -> takeaction n (h-1) (x::a) xs
+
 
 let rec ready() = async {
          let! msg = ev.Receive()
          match msg with
             | Clear -> return! ready()
-            | Take (n,h)  -> takeaction n h sticks
             | _     -> failwith ("ready: unexpected message")
 
          }
@@ -65,7 +125,7 @@ and loading(url) =
               (fun _ -> ev.Post Cancelled),
               ts.Token)
         
-         //disable [takeButton;clearButton;loadButton]
+         disable [takeButton;clearButton;loadButton]
          let! msg = ev.Receive()
          match msg with
             | Web html -> printfn "Html %s" html
@@ -78,7 +138,7 @@ and loading(url) =
 and cancelling() = 
   async {
          
-         //disable [startButton; clearButton; cancelButton]
+         disable [clearButton; cancelButton]
          let! msg = ev.Receive()
          match msg with
          | Cancelled | Error | Web  _ ->
@@ -88,94 +148,32 @@ and cancelling() =
 and player = 
     async {
     
-    //disable [loadButton]
+    disable [loadButton]
 
     let! msg = ev.Receive()
     match msg with
         |Clear -> return! ready()
-        |Take (n,h) -> printf "Take %d %d" n h
+        |Take (n,h) -> sticks <- takeaction n h [] sticks
         |_ -> failwith("player: unexpected message")
     }
 and AI =
     async {
-    //disable [loadButton,takeButton,cancelButton]
+    disable [loadButton;takeButton;cancelButton]
 
     let! msg = ev.Receive()
     match msg with
         |Clear -> return! ready()
         |_ -> failwith("AI: unexpected message")
-    
     }
 and finished(s) =
     async {
-    //ansBox.text <- s
-    //disable [takeButton; cancelButton]
-         let! msg = ev.Receive()
-         match msg with
-         | Clear -> return! ready()
-         | _     ->  failwith("finished: unexpected message")
-    }
+    ansBox.text <- s
+    disable [takeButton;cancelButton]
+    let! msg = ev.Receive()
+    match msg with
+        | Clear -> return! ready()
+        | _     ->  failwith("finished: unexpected message")
+    };;
 
 let makeArray (html:string) = html.Split [|' '|]
-
-
-
-
-
-
-
-
-
-
-
-
-
-let window = new Form(Text="Nim Game", Size=Size(700,700))
-
-let urlBox = new TextBox(Location=Point(10,10),Size=Size(400,25))
-
-
-let ansBox =
-  new TextBox(Location=Point(10,650),Size=Size(200,25))
-
-
-let loadButton = new Button(Location=Point(415,10),MinimumSize=Size(50,25),
-                  MaximumSize=Size(50,25),Text="Load Game")
-
-let cancelButton = new Button(Location=Point(470,10),MinimumSize=Size(50,25),
-                    MaximumSize=Size(50,25),Text="Cancel load")
-
-let takeButton = new Button(Location=Point(575,10),MinimumSize=Size(100,75),
-                  MaximumSize=Size(100,75),Text="Take!")
-
-let clearButton = new Button(Location=Point(575,650),MinimumSize=Size(100,25),
-                   MaximumSize=Size(100,25),Text="Clear Game")
-
-                   
-                  
-
-// Initialization
-
-
-// view
-
-window.Controls.Add urlBox
-window.Controls.Add loadButton
-window.Controls.Add cancelButton
-
-window.Controls.Add takeButton
-
-window.Controls.Add clearButton
-
-window.Controls.Add ansBox
-
-
-
-
-
-
-// Start
-//Async.StartImmediate (empty())
-Application.Run(window) (* Mac *)
-//window.Show() (* Windows *)
 
