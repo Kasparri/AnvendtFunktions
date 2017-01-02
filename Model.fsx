@@ -10,10 +10,7 @@ open System.Threading
 open System.Windows.Forms 
 open System.Drawing
 
-// VIEW
-
-
-
+// view
 
 let window = new Form(Text="Nim Game", Size=Size(700,700))
 
@@ -21,8 +18,6 @@ let urlBox = new TextBox(Location=Point(10,10),Size=Size(400,25))
 
 let ansBox =
   new TextBox(Location=Point(150,150),Size=Size(200,25))
-
-
 
 let loadButton = new Button(Location=Point(415,10),MinimumSize=Size(50,25),
                   MaximumSize=Size(50,25),Text="Load Game")
@@ -37,8 +32,6 @@ let takeButton = new Button(Location=Point(575,10),MinimumSize=Size(100,75),
 let clearButton = new Button(Location=Point(575,650),MinimumSize=Size(100,25),
                    MaximumSize=Size(100,25),Text="Clear Game")
 
-                   
-
 
 let disable bs = 
     for b in [loadButton;takeButton;cancelButton;clearButton] do 
@@ -46,29 +39,8 @@ let disable bs =
     for (b:Button) in bs do 
         b.Enabled  <- false
 
-// Initialization
 
-
-window.Controls.Add urlBox
-window.Controls.Add loadButton
-window.Controls.Add cancelButton
-
-window.Controls.Add takeButton
-
-window.Controls.Add clearButton
-
-window.Controls.Add ansBox
-
-// Start
-
-//Async.StartImmediate (empty())
-
-//Application.Run(window) (* Mac *)
-window.Show() (* Windows *)
-
-// END OF VIEW
-
-//MODEL
+// Model
 
 type AsyncEventQueue<'T>() = 
     let mutable cont = None 
@@ -94,7 +66,7 @@ type AsyncEventQueue<'T>() =
 type Message =
   | Take of (int*int) | Clear | Cancel | Web of string | Error | Cancelled 
 
-let mutable sticks = [5;4;3]
+let mutable sticks = [| 5;4;3 |]
 
 let ev = AsyncEventQueue()
 
@@ -175,5 +147,30 @@ and finished(s) =
         | _     ->  failwith("finished: unexpected message")
     };;
 
-let makeArray (html:string) = html.Split [|' '|]
+let makeArray (html:string) = 
+    let array = html.Split [|' '|]
+    Array.map int array;;
+
+
+
+// Initialization
+
+
+window.Controls.Add urlBox
+window.Controls.Add loadButton
+window.Controls.Add cancelButton
+
+window.Controls.Add takeButton
+
+window.Controls.Add clearButton
+
+window.Controls.Add ansBox
+
+// Start
+
+//Async.StartImmediate (empty())
+
+Application.Run(window) (* Mac *)
+//window.Show() (* Windows *)
+
 
