@@ -3,6 +3,13 @@
 
 // Mads Ejdesgaard Maibohm s144479
 // Kasper Lederballe Sørensen s144453
+
+open System 
+open System.Net 
+open System.Threading 
+open System.Windows.Forms 
+open System.Drawing 
+
 type AsyncEventQueue<'T>() = 
     let mutable cont = None 
     let queue = System.Collections.Generic.Queue<'T>()
@@ -24,23 +31,87 @@ type AsyncEventQueue<'T>() =
         Async.FromContinuations (fun (cont,econt,ccont) -> 
             tryListen cont)
 
+type Message =
+  | Take of (int*int) | Clear | Cancel | Web of string | Error | Cancelled 
+
 let sticks = [5;4;3]
 
 let ev = AsyncEventQueue()
 
+let rec takeaction n h = function
+    |x::xs when h = 0 -> x-n::xs
+    |x::xs -> takeaction n (h-1) xs
+    |[] -> []
+
 let rec ready() = async {
          let! msg = ev.Receive()
          match msg with
-            | clear -> return! ready()
-            | take  -> return! failwith("ready: No game started yet")
-            | _     -> failwith ("ready: updating message")
+            | Clear -> return! ready()
+            | Take (n,h)  -> takeaction n h sticks
+            | _     -> failwith ("ready: unexpected message")
 
-         };;
+         }
 
-and loading =
+and loading(url) =
+         async {
+         use ts = new CancellationTokenSource()
 
-and player =
+         Async.StartWithContinuations
+             (async { let webCl = new WebClient()
+                      let! html = webCl.AsyncDownloadString(Uri url)
+                      return html },
+              (fun html -> ev.Post (Web html)),
+              (fun _ -> ev.Post Error),
+              (fun _ -> ev.Post Cancelled),
+              ts.Token)
+        
+         //disable [takeButton;clearButton;loadButton]
+         let! msg = ev.Receive()
+         match msg with
+            | Web html -> printfn "Html %s" html
+            | Error -> return! finished("Error")
+            | Cancel -> ts.Cancel()
+                        return! cancelling()
+            | _     -> failwith ("loading:unexpected message")
 
+         }
+and cancelling() = 
+  async {
+         
+         //disable [startButton; clearButton; cancelButton]
+         let! msg = ev.Receive()
+         match msg with
+         | Cancelled | Error | Web  _ ->
+                   return! finished("Cancelled")
+         | _    ->  failwith("cancelling: unexpected message")
+         }
+and player = 
+    async {
+    
+    //disable [loadButton]
+
+    let! msg = ev.Receive()
+    match msg with
+        |Clear -> return! ready()
+        |Take (n,h) -> printf "Take %d %d" n h
+        |_ -> failwith("player: unexpected message")
+    }
 and AI =
+    async {
+    //disable [loadButton,takeButton,cancelButton]
 
-and finished =
+    let! msg = ev.Receive()
+    match msg with
+        |Clear -> return! ready()
+        |_ -> failwith("AI: unexpected message")
+    
+    }
+and finished(s) =
+    async {
+    //ansBox.text <- s
+    //disable [takeButton; cancelButton]
+         let! msg = ev.Receive()
+         match msg with
+         | Clear -> return! ready()
+         | _     ->  failwith("finished: unexpected message")
+    }

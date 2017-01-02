@@ -15,15 +15,15 @@ open System.Drawing
 let window = new Form(Text="Nim Game", Size=Size(700,700))
 
 let urlBox = new TextBox(Location=Point(10,10),Size=Size(400,25))
-let loadButton = new Button(Location=Point(415,10),MinimumSize=Size(50,25),
-                 MaximumSize=Size(50,25),Text="Load Game")
+let loadButton = new Button(Location=Point(415,10),MinimumSize=Size(50,25), MaximumSize=Size(50,25),Text="Load Game")
 
 
-let takeButton = new Button(Location=Point(575,10),MinimumSize=Size(100,75),
-                 MaximumSize=Size(100,75),Text="Take!")
+let takeButton = new Button(Location=Point(575,10),MinimumSize=Size(100,75), MaximumSize=Size(100,75),Text="Take!")
 
-let clearButton = new Button(Location=Point(575,650),MinimumSize=Size(100,25),
-                  MaximumSize=Size(100,25),Text="Clear Game")
+let clearButton = new Button(Location=Point(575,650),MinimumSize=Size(100,25), MaximumSize=Size(100,25),Text="Clear Game")
+
+let ansBox =
+  new TextBox(Location=Point(150,150),Size=Size(200,25))
 
 
 
@@ -39,9 +39,11 @@ window.Controls.Add takeButton
 
 window.Controls.Add clearButton
 
+window.Controls.Add ansBox
+
 // Start
 
 //Async.StartImmediate (empty())
 
-Application.Run(window) (* Mac *)
-//window.Show() (* Windows *)
+//Application.Run(window) (* Mac *)
+window.Show() (* Windows *)
