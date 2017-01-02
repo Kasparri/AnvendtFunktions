@@ -39,6 +39,10 @@ let disable bs =
     for (b:Button) in bs do 
         b.Enabled  <- false
 
+let makeArray (html:string) = 
+    let array = html.Split [|' '|]
+    Array.map int array;;
+
 
 // Model
 
@@ -70,10 +74,9 @@ let mutable sticks = [| 5;4;3 |]
 
 let ev = AsyncEventQueue()
 
-let rec takeaction n h a = function
-    |[] -> a @ []
-    |x::xs when h=0 -> a @ (x-n)::xs
-    |x::xs -> takeaction n (h-1) (x::a) xs
+let rec takeaction n h (A:(int [])) =
+    A.[h] <- A.[h] - n
+    
 
 
 let rec ready() = async {
@@ -101,6 +104,7 @@ and loading(url) =
          let! msg = ev.Receive()
          match msg with
             | Web html -> sticks <- makeArray html
+                          return! player()
             | Error -> return! finished("Error")
             | Cancel -> ts.Cancel()
                         return! cancelling()
@@ -117,7 +121,7 @@ and cancelling() =
                    return! finished("Cancelled")
          | _    ->  failwith("cancelling: unexpected message")
          }
-and player = 
+and player() = 
     async {
     
     disable [loadButton]
@@ -125,15 +129,16 @@ and player =
     let! msg = ev.Receive()
     match msg with
         |Clear -> return! ready()
-        |Take (n,h) -> sticks <- takeaction n h [] sticks
+        |Take (n,h) -> return! AI()
         |_ -> failwith("player: unexpected message")
     }
-and AI =
+and AI() =
     async {
     disable [loadButton;takeButton;cancelButton]
 
     let! msg = ev.Receive()
     match msg with
+        |Take (n,h) -> return! AI()
         |Clear -> return! ready()
         |_ -> failwith("AI: unexpected message")
     }
@@ -147,9 +152,7 @@ and finished(s) =
         | _     ->  failwith("finished: unexpected message")
     };;
 
-let makeArray (html:string) = 
-    let array = html.Split [|' '|]
-    Array.map int array;;
+
 
 
 
