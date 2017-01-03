@@ -82,6 +82,8 @@ type AsyncEventQueue<'T>() =
         Async.FromContinuations (fun (cont,econt,ccont) -> 
             tryListen cont)
 
+
+
 type Message =
   | Take of (int*int) | Clear | Cancel | Web of string | Error | Cancelled | Load of (int*int*int)
 
@@ -97,19 +99,36 @@ let makeArray (html:string) =
     let array = trimmed.Split (' ', '\n')
     let finishedArray = Array.map int array
     ansBox.Text <- sprintf "%A" finishedArray
-    finishedArray;;
-
-let rec takeaction n h (A:(int [])) =
-    let heapammount = A.[h]
-    if n > heapammount then failwith("Can't take more sticks than there are") 
-    else
-    A.[h] <- A.[h] - n
-    ansBox.Text <- sprintf "%A" A;;
+    finishedArray
 
 
+
+
+let removeSticks n i (a:(int [])) = 
+    if n > a.[i] then failwith("Can't take more sticks than there are")
+    else a.[i] <- (a.[i]-n)
+
+let takeAction n h (A:(int [])) =
+    removeSticks n h A
+    ansBox.Text <- sprintf "%A" A
 
 let consURL n min max = sprintf "https://www.random.org/integers/?num=%d&min=%d&max=%d&col=1&base=10&format=plain&rnd=new" n min max
+   
+
+let getM a =
+    Array.fold (fun s v -> s^^^v ) 0 a
+
+let makeZeroMove =
+    let temp = Array.copy sticks
+    for i in sticks do
+        for j in 1..i do
+            //removeSticks j i temp
+            if getM temp = 0 then takeAction j i sticks
+
     
+let removeFromBiggest = takeAction 1 (Array.max sticks) sticks
+
+let aiMove a = if (getM a) = 0 then removeFromBiggest else makeZeroMove
 
 
 let rec ready() = async {
@@ -164,7 +183,7 @@ and player() =
     let! msg = ev.Receive()
     match msg with
         |Clear -> return! ready()
-        |Take (n,h) -> takeaction n h sticks
+        |Take (n,h) -> takeAction n h sticks
                        return! AI()
         |_ -> failwith("player: unexpected message")
     }
@@ -176,7 +195,7 @@ and AI() =
 
     let! msg = ev.Receive()
     match msg with
-        |Take (n,h) -> takeaction n h sticks
+        |Take (n,h) -> takeAction n h sticks
                        return! player()
         |Clear -> return! ready()
         |_ -> failwith("AI: unexpected message")
@@ -189,7 +208,7 @@ and finished(s) =
     match msg with
         | Clear -> return! ready()
         | _     ->  failwith("finished: unexpected message")
-    };;
+    }
 
 
 
@@ -221,7 +240,7 @@ loadButton.Click.Add ( fun _ -> ev.Post (Load(int rowBox.Text, int minBox.Text,i
 // Start
 Async.StartImmediate (ready())
 
-//Application.Run(window) (* Mac *)
-window.Show() (* Windows *)
+Application.Run(window) (* Mac *)
+//window.Show() (* Windows *)
 
 
