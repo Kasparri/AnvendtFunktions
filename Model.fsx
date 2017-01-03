@@ -13,24 +13,37 @@ open System.Drawing
 // view
 
 let window = 
-  new Form(Text="Nim Game", Size=Size(700,700))
+  new Form(Text="Nim Game", Size=Size(600,600))
 
-let rowBox = 
-  new TextBox(Location=Point(10,10),Size=Size(80,25), Text="Heap number")
+let fetchWindow =
+  new Form(Text="Fetching Window", Size=Size(500,200))
 
+let fetchButton =
+  new Button(Location=Point(450,450),MinimumSize=Size(50,50),
+               MaximumSize=Size(50,50),Text="Fetch Button")
+
+let heapLabel = new Label(Location=Point(50,15), Text="Amount of heaps")
+let minLabel = new Label(Location=Point(175,15), Text="Min number")
+let maxLabel = new Label(Location=Point(300,15), Text="Max number")
+
+let heapBox = 
+  new TextBox(Location=Point(50,30),Size=Size(125,50), Text="2")
 let minBox = 
-  new TextBox(Location=Point(95,10),Size=Size(80,25), Text="Min amount")
-
+  new TextBox(Location=Point(175,30),Size=Size(125,50), Text="1")
 let maxBox = 
-  new TextBox(Location=Point(180,10),Size=Size(80,25), Text="Max amount")
+  new TextBox(Location=Point(300,30),Size=Size(125,50), Text="8")
+
+let fetchOKButton =
+  new Button(Location=Point(50,70),MinimumSize=Size(250,50),
+                MaximumSize=Size(250,50),Text="Fetching OK")
+let cancelButton = 
+  new Button(Location=Point(310,70),MinimumSize=Size(115,50),
+               MaximumSize=Size(115,50),Text="Cancel load")
 
 let loadButton = 
   new Button(Location=Point(265,10),MinimumSize=Size(50,25),
                MaximumSize=Size(50,25),Text="Load Game")
 
-let cancelButton = 
-  new Button(Location=Point(320,10),MinimumSize=Size(50,25),
-               MaximumSize=Size(50,25),Text="Cancel load")
 
 let ansBox =
   new TextBox(Location=Point(150,150),Size=Size(200,25))
@@ -140,8 +153,7 @@ and loading(url) =
                       let! html = webCl.AsyncDownloadString(Uri url)
                       return html },
               (fun html -> ev.Post (Web html)),
-              (fun _ -> Console.WriteLine "her" 
-                        ev.Post Error),
+              (fun _ -> ev.Post Error),
               (fun _ -> ev.Post Cancelled),
               ts.Token)
         
@@ -187,13 +199,6 @@ and AI() =
     else disable [loadButton;cancelButton]
          aiMove()
          return! player()
-    (*
-    let! msg = ev.Receive()
-    match msg with
-        |Take (n,h) -> takeAction n h sticks
-                       return! player()
-        |Clear -> return! ready()
-        |_ -> failwith("AI: unexpected message") *)
     }
 and finished(s) =
     async {
@@ -206,36 +211,46 @@ and finished(s) =
     }
 
 
-
-
-
 // Initialization
 
 
-window.Controls.Add minBox
-window.Controls.Add maxBox
-window.Controls.Add rowBox
-window.Controls.Add loadButton
-window.Controls.Add cancelButton
 window.Controls.Add takeButton
 window.Controls.Add clearButton
 window.Controls.Add ansBox
 window.Controls.Add heapNumberBox
 window.Controls.Add amountBox
 
+
+
 takeButton.Click.Add (fun _ -> ev.Post (Take ((int amountBox.Text),(int heapNumberBox.Text))) )
 
 clearButton.Click.Add (fun _ -> ev.Post Clear)
 
+
+window.Controls.Add fetchButton
+fetchButton.Click.Add ( fun _ -> fetchWindow.Show() )
+
+fetchWindow.Controls.Add heapBox
+fetchWindow.Controls.Add minBox
+fetchWindow.Controls.Add maxBox
+
+fetchWindow.Controls.Add heapLabel
+fetchWindow.Controls.Add minLabel
+fetchWindow.Controls.Add maxLabel
+
+fetchWindow.Controls.Add fetchOKButton
+fetchOKButton.Click.Add ( fun _ -> ev.Post (Load(int heapBox.Text, int minBox.Text,int maxBox.Text))
+                                   fetchWindow.Close() )
+
+fetchWindow.Controls.Add cancelButton
 cancelButton.Click.Add ( fun _ -> ev.Post Cancel)
-
-loadButton.Click.Add ( fun _ -> ev.Post (Load(int rowBox.Text, int minBox.Text,int maxBox.Text)))
-
 
 // Start
 Async.StartImmediate (ready())
 
-Application.Run(window) (* Mac *)
-//window.Show() (* Windows *)
+//Application.Run(window) (* Mac *)
+window.Show() (* Windows *)
+
+
 
 
