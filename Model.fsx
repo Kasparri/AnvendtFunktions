@@ -68,7 +68,7 @@ type AsyncEventQueue<'T>() =
             tryListen cont)
 
 type Message =
-  | Take of (int*int) | Clear | Cancel | Web of string | Error | Cancelled 
+  | Take of (int*int) | Clear | Cancel | Web of string | Error | Cancelled | Load of (int*int*int)
 
 let mutable sticks = [| 5;4;3 |]
 
@@ -76,6 +76,8 @@ let ev = AsyncEventQueue()
 
 let rec takeaction n h (A:(int [])) =
     A.[h] <- A.[h] - n
+
+let consURL n min max = String.Format ("https://www.random.org/integers/?num={0}&min={1}&max={2}&col=1&base=10&format=plain&rnd=new",n,min,max)
     
 
 
@@ -83,6 +85,7 @@ let rec ready() = async {
          let! msg = ev.Receive()
          match msg with
             | Clear -> return! ready()
+            | Load (n,min,max) -> printf "Load"
             | _     -> failwith ("ready: unexpected message")
 
          }
@@ -129,7 +132,8 @@ and player() =
     let! msg = ev.Receive()
     match msg with
         |Clear -> return! ready()
-        |Take (n,h) -> return! AI()
+        |Take (n,h) -> takeaction n h sticks
+                       return! AI()
         |_ -> failwith("player: unexpected message")
     }
 and AI() =
@@ -138,7 +142,8 @@ and AI() =
 
     let! msg = ev.Receive()
     match msg with
-        |Take (n,h) -> return! AI()
+        |Take (n,h) -> takeaction n h sticks
+                       return! player()
         |Clear -> return! ready()
         |_ -> failwith("AI: unexpected message")
     }
@@ -169,11 +174,20 @@ window.Controls.Add clearButton
 
 window.Controls.Add ansBox
 
+takeButton.Click.Add (fun _ -> ev.Post (Take (1,1)) )
+
+clearButton.Click.Add (fun _ -> ev.Post Clear)
+
+cancelButton.Click.Add ( fun _ -> ev.Post Cancel)
+
+loadButton.Click.Add ( fun _ -> ev.Post (Web urlBox.Text) )
+
+
 // Start
 
 //Async.StartImmediate (empty())
 
-Application.Run(window) (* Mac *)
-//window.Show() (* Windows *)
+//Application.Run(window) (* Mac *)
+window.Show() (* Windows *)
 
 
