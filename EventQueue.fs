@@ -1,3 +1,4 @@
+module EventQueue
 type AsyncEventQueue<'T>() = 
     let mutable cont = None 
     let queue = System.Collections.Generic.Queue<'T>()
