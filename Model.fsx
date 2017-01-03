@@ -115,20 +115,19 @@ let takeAction n h (A:(int [])) =
 let consURL n min max = sprintf "https://www.random.org/integers/?num=%d&min=%d&max=%d&col=1&base=10&format=plain&rnd=new" n min max
    
 
-let getM a =
-    Array.fold (fun s v -> s^^^v ) 0 a
+let getM a = Array.fold (fun s v -> s^^^v ) 0 a
 
 let makeZeroMove =
     let temp = Array.copy sticks
-    for i in sticks do
-        for j in 1..i do
-            //removeSticks j i temp
+    for i in 0..(Array.length temp) do
+        for j in 1..temp.[i] do
+            removeSticks j i temp
             if getM temp = 0 then takeAction j i sticks
 
     
-let removeFromBiggest = takeAction 1 (Array.max sticks) sticks
+let removeFromBiggest = takeAction 1 (Array.findIndex (fun v -> v = (Array.max sticks)) sticks) sticks
 
-let aiMove a = if (getM a) = 0 then removeFromBiggest else makeZeroMove
+let aiMove = if (getM sticks) = 0 then removeFromBiggest else makeZeroMove
 
 
 let rec ready() = async {
@@ -139,7 +138,6 @@ let rec ready() = async {
             | _     -> failwith ("ready: unexpected message")
 
          }
-
 and loading(url) =
          async {
          use ts = new CancellationTokenSource()
@@ -176,7 +174,7 @@ and cancelling() =
          }
 and player() = 
     async {
-    if victorycheck sticks then return! finished("Player won") 
+    if victorycheck sticks then return! finished("AI won") 
     else
     disable [loadButton]
 
@@ -189,16 +187,22 @@ and player() =
     }
 and AI() =
     async {
-    if victorycheck sticks then return! finished("AI won")
+    if victorycheck sticks then return! finished("Player won")
     else
+
+
     disable [loadButton;cancelButton]
 
+    aiMove
+
+    player
+    (*
     let! msg = ev.Receive()
     match msg with
         |Take (n,h) -> takeAction n h sticks
                        return! player()
         |Clear -> return! ready()
-        |_ -> failwith("AI: unexpected message")
+        |_ -> failwith("AI: unexpected message") *)
     }
 and finished(s) =
     async {
