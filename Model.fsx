@@ -52,7 +52,9 @@ let disable bs =
         b.Enabled  <- false
 
 let makeArray (html:string) = 
-    let array = html.Split [|' '|]
+    let trimmed = html.Trim()
+    let array = trimmed.Split (' ', '\n')
+    printfn "%A" array
     Array.map int array;;
 
 
@@ -88,6 +90,7 @@ let ev = AsyncEventQueue()
 
 let rec takeaction n h (A:(int [])) =
     A.[h] <- A.[h] - n
+    ansBox.Text <- sprintf "%A" A
 
 let consURL n min max = String.Format ("https://www.random.org/integers/?num={0}&min={1}&max={2}&col=1&base=10&format=plain&rnd=new",n,min,max)
     
@@ -97,7 +100,7 @@ let rec ready() = async {
          let! msg = ev.Receive()
          match msg with
             | Clear -> return! ready()
-            | Load (n,min,max) -> printf "Load"
+            | Load (n,min,max) -> return! loading(consURL n min max)
             | _     -> failwith ("ready: unexpected message")
 
          }
@@ -191,12 +194,11 @@ clearButton.Click.Add (fun _ -> ev.Post Clear)
 
 cancelButton.Click.Add ( fun _ -> ev.Post Cancel)
 
-loadButton.Click.Add ( fun _ -> ev.Post (Web urlBox.Text) )
+loadButton.Click.Add ( fun _ -> ev.Post (Load ( int rowBox.Text, int minBox.Text, int maxBox.Text )))
 
 
 // Start
-
-//Async.StartImmediate (empty())
+Async.StartImmediate (ready())
 
 //Application.Run(window) (* Mac *)
 window.Show() (* Windows *)
