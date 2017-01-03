@@ -12,25 +12,37 @@ open System.Drawing
 
 // view
 
-let window = new Form(Text="Nim Game", Size=Size(700,700))
+let window = 
+  new Form(Text="Nim Game", Size=Size(700,700))
 
-let urlBox = new TextBox(Location=Point(10,10),Size=Size(400,25))
+let rowBox = 
+  new TextBox(Location=Point(10,10),Size=Size(80,25), Text="Heap number")
+
+let minBox = 
+  new TextBox(Location=Point(95,10),Size=Size(80,25), Text="Min amount")
+
+let maxBox = 
+  new TextBox(Location=Point(180,10),Size=Size(80,25), Text="Max amount")
+
+let loadButton = 
+  new Button(Location=Point(265,10),MinimumSize=Size(50,25),
+               MaximumSize=Size(50,25),Text="Load Game")
+
+let cancelButton = 
+  new Button(Location=Point(320,10),MinimumSize=Size(50,25),
+               MaximumSize=Size(50,25),Text="Cancel load")
 
 let ansBox =
   new TextBox(Location=Point(150,150),Size=Size(200,25))
 
-let loadButton = new Button(Location=Point(415,10),MinimumSize=Size(50,25),
-                  MaximumSize=Size(50,25),Text="Load Game")
+let takeButton = 
+  new Button(Location=Point(575,10),MinimumSize=Size(100,75),
+               MaximumSize=Size(100,75),Text="Take!")
 
-let cancelButton = new Button(Location=Point(470,10),MinimumSize=Size(50,25),
-                    MaximumSize=Size(50,25),Text="Cancel load")
+let clearButton = 
+  new Button(Location=Point(575,650),MinimumSize=Size(100,25),
+               MaximumSize=Size(100,25),Text="Clear Game")
 
-
-let takeButton = new Button(Location=Point(575,10),MinimumSize=Size(100,75),
-                  MaximumSize=Size(100,75),Text="Take!")
-
-let clearButton = new Button(Location=Point(575,650),MinimumSize=Size(100,25),
-                   MaximumSize=Size(100,25),Text="Clear Game")
 
 
 let disable bs = 
@@ -164,14 +176,13 @@ and finished(s) =
 // Initialization
 
 
-window.Controls.Add urlBox
+window.Controls.Add minBox
+window.Controls.Add maxBox
+window.Controls.Add rowBox
 window.Controls.Add loadButton
 window.Controls.Add cancelButton
-
 window.Controls.Add takeButton
-
 window.Controls.Add clearButton
-
 window.Controls.Add ansBox
 
 takeButton.Click.Add (fun _ -> ev.Post (Take (1,1)) )
