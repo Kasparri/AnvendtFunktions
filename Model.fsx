@@ -49,14 +49,11 @@ let amountBox =
 let heapNumberBox =
   new TextBox(Location=Point(575,130),Size=Size(80,25),Text="heap number")
 
-
 let disable bs = 
     for b in [loadButton;takeButton;cancelButton;clearButton] do 
         b.Enabled  <- true
     for (b:Button) in bs do 
         b.Enabled  <- false
-
-
 
 
 // Model
@@ -87,7 +84,7 @@ type AsyncEventQueue<'T>() =
 type Message =
   | Take of (int*int) | Clear | Cancel | Web of string | Error | Cancelled | Load of (int*int*int)
 
-let mutable sticks = [| 1;2;3 |]
+let mutable sticks = [| |]
 
 let ev:AsyncEventQueue<Message> = AsyncEventQueue()
 
@@ -111,7 +108,6 @@ let takeAction n h (A:(int [])) =
 
 let consURL n min max = sprintf "https://www.random.org/integers/?num=%d&min=%d&max=%d&col=1&base=10&format=plain&rnd=new" n min max
   
-
 let getM a = Array.fold (fun s v -> s^^^v ) 0 a
 
 let movePred ak m = (ak ^^^ m) < ak
@@ -122,11 +118,9 @@ let makeZeroMove array m =
     takeAction diff id sticks
 
                      
-let removeFromBiggest = takeAction 1 (Array.findIndex (fun v -> v = (Array.max sticks)) sticks) sticks
+let removeFromBiggest() = takeAction 1 (Array.findIndex (fun v -> v = (Array.max sticks)) sticks) sticks
 
-let aiMove = printf "AIMOVE" 
-             if (getM sticks) = 0 then removeFromBiggest else makeZeroMove sticks (getM sticks)
-
+let aiMove() = if (getM sticks) = 0 then removeFromBiggest() else makeZeroMove sticks (getM sticks)
 
 
 let rec ready() = async {
@@ -146,7 +140,8 @@ and loading(url) =
                       let! html = webCl.AsyncDownloadString(Uri url)
                       return html },
               (fun html -> ev.Post (Web html)),
-              (fun _ -> ev.Post Error),
+              (fun _ -> Console.WriteLine "her" 
+                        ev.Post Error),
               (fun _ -> ev.Post Cancelled),
               ts.Token)
         
@@ -187,14 +182,11 @@ and player() =
     }
 and AI() =
     async {
-    if victorycheck sticks then return! finished("Player won")
-    else
-
-
-    disable [loadButton;cancelButton]
-    printf "AI tur"
-    aiMove
-    return! player()
+    if victorycheck sticks
+    then return! finished("Player won")
+    else disable [loadButton;cancelButton]
+         aiMove()
+         return! player()
     (*
     let! msg = ev.Receive()
     match msg with
