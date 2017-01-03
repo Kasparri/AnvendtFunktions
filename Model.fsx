@@ -43,6 +43,11 @@ let clearButton =
   new Button(Location=Point(575,650),MinimumSize=Size(100,25),
                MaximumSize=Size(100,25),Text="Clear Game")
 
+let amountBox =
+  new TextBox(Location=Point(575,100),Size=Size(80,25),Text="amount remove")
+
+let heapNumberBox =
+  new TextBox(Location=Point(575,130),Size=Size(80,25),Text="heap number")
 
 
 let disable bs = 
@@ -212,7 +217,7 @@ loadButton.Click.Add ( fun _ -> ev.Post (Load ( int rowBox.Text, int minBox.Text
 // Start
 Async.StartImmediate (ready())
 
-//Application.Run(window) (* Mac *)
-window.Show() (* Windows *)
+Application.Run(window) (* Mac *)
+//window.Show() (* Windows *)
 
 
