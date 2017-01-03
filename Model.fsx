@@ -63,7 +63,7 @@ let heapNumberBox =
   new TextBox(Location=Point(575,130),Size=Size(80,25),Text="heap number")
 
 let disable bs = 
-    for b in [loadButton;takeButton;cancelButton;clearButton] do 
+    for b in [fetchButton;takeButton;cancelButton;clearButton] do 
         b.Enabled  <- true
     for (b:Button) in bs do 
         b.Enabled  <- false
@@ -135,14 +135,12 @@ let removeFromBiggest() = takeAction 1 (Array.findIndex (fun v -> v = (Array.max
 
 let aiMove() = if (getM sticks) = 0 then removeFromBiggest() else makeZeroMove sticks (getM sticks)
 
-
 let rec ready() = async {
          let! msg = ev.Receive()
          match msg with
             | Clear -> return! ready()
             | Load (n,min,max) -> return! loading(consURL n min max)
             | _     -> failwith ("ready: unexpected message")
-
          }
 and loading(url) =
          async {
@@ -157,7 +155,7 @@ and loading(url) =
               (fun _ -> ev.Post Cancelled),
               ts.Token)
         
-         disable [takeButton;clearButton;loadButton]
+         disable [takeButton;clearButton;fetchButton]
          let! msg = ev.Receive()
          match msg with
             | Web html -> sticks <- makeArray html
@@ -182,7 +180,7 @@ and player() =
     async {
     if victorycheck sticks then return! finished("AI won") 
     else
-    disable [loadButton]
+    disable [fetchButton]
 
     let! msg = ev.Receive()
     match msg with
@@ -196,7 +194,7 @@ and AI() =
     async {
     if victorycheck sticks
     then return! finished("Player won")
-    else disable [loadButton;cancelButton]
+    else disable [fetchButton;cancelButton]
          aiMove()
          return! player()
     }
@@ -213,7 +211,6 @@ and finished(s) =
 
 // Initialization
 
-
 window.Controls.Add takeButton
 window.Controls.Add clearButton
 window.Controls.Add ansBox
@@ -221,9 +218,7 @@ window.Controls.Add heapNumberBox
 window.Controls.Add amountBox
 
 
-
 takeButton.Click.Add (fun _ -> ev.Post (Take ((int amountBox.Text),(int heapNumberBox.Text))) )
-
 clearButton.Click.Add (fun _ -> ev.Post Clear)
 
 
@@ -233,16 +228,14 @@ fetchButton.Click.Add ( fun _ -> fetchWindow.Show() )
 fetchWindow.Controls.Add heapBox
 fetchWindow.Controls.Add minBox
 fetchWindow.Controls.Add maxBox
-
 fetchWindow.Controls.Add heapLabel
 fetchWindow.Controls.Add minLabel
 fetchWindow.Controls.Add maxLabel
-
 fetchWindow.Controls.Add fetchOKButton
+fetchWindow.Controls.Add cancelButton
+
 fetchOKButton.Click.Add ( fun _ -> ev.Post (Load(int heapBox.Text, int minBox.Text,int maxBox.Text))
                                    fetchWindow.Close() )
-
-fetchWindow.Controls.Add cancelButton
 cancelButton.Click.Add ( fun _ -> ev.Post Cancel)
 
 // Start
