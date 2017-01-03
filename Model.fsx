@@ -54,8 +54,9 @@ let disable bs =
 let makeArray (html:string) = 
     let trimmed = html.Trim()
     let array = trimmed.Split (' ', '\n')
-    printfn "%A" array
-    Array.map int array;;
+    let array = Array.map int array
+    ansBox.Text <- sprintf "%A" array
+    array;;
 
 
 // Model
@@ -88,9 +89,17 @@ let mutable sticks = [| 5;4;3 |]
 
 let ev = AsyncEventQueue()
 
+let victorycheck (A:int[]) =
+    Array.forall (fun i -> i = 0) A
+
 let rec takeaction n h (A:(int [])) =
+    let heapammount = A.[h]
+    if n > heapammount then failwith("Can't take more sticks than there are") 
+    else
     A.[h] <- A.[h] - n
-    ansBox.Text <- sprintf "%A" A
+    ansBox.Text <- sprintf "%A" A;;
+
+
 
 let consURL n min max = String.Format ("https://www.random.org/integers/?num={0}&min={1}&max={2}&col=1&base=10&format=plain&rnd=new",n,min,max)
     
@@ -141,7 +150,8 @@ and cancelling() =
          }
 and player() = 
     async {
-    
+    if victorycheck sticks then return! finished("Player won") 
+    else
     disable [loadButton]
 
     let! msg = ev.Receive()
@@ -153,7 +163,9 @@ and player() =
     }
 and AI() =
     async {
-    disable [loadButton;takeButton;cancelButton]
+    if victorycheck sticks then return! finished("AI won")
+    else
+    disable [loadButton;cancelButton]
 
     let! msg = ev.Receive()
     match msg with
