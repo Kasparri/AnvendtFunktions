@@ -56,12 +56,7 @@ let disable bs =
     for (b:Button) in bs do 
         b.Enabled  <- false
 
-let makeArray (html:string) = 
-    let trimmed = html.Trim()
-    let array = trimmed.Split (' ', '\n')
-    let array = Array.map int array
-    ansBox.Text <- sprintf "%A" array
-    array;;
+
 
 
 // Model
@@ -92,10 +87,17 @@ type Message =
 
 let mutable sticks = [| 5;4;3 |]
 
-let ev = AsyncEventQueue()
+let ev:AsyncEventQueue<Message> = AsyncEventQueue()
 
 let victorycheck (A:int[]) =
     Array.forall (fun i -> i = 0) A
+
+let makeArray (html:string) = 
+    let trimmed = html.Trim()
+    let array = trimmed.Split (' ', '\n')
+    let finishedArray = Array.map int array
+    ansBox.Text <- sprintf "%A" finishedArray
+    finishedArray;;
 
 let rec takeaction n h (A:(int [])) =
     let heapammount = A.[h]
@@ -106,7 +108,7 @@ let rec takeaction n h (A:(int [])) =
 
 
 
-let consURL n min max = String.Format ("https://www.random.org/integers/?num={0}&min={1}&max={2}&col=1&base=10&format=plain&rnd=new",n,min,max)
+let consURL n min max = sprintf "https://www.random.org/integers/?num=%d&min=%d&max=%d&col=1&base=10&format=plain&rnd=new" n min max
     
 
 
@@ -204,20 +206,22 @@ window.Controls.Add cancelButton
 window.Controls.Add takeButton
 window.Controls.Add clearButton
 window.Controls.Add ansBox
+window.Controls.Add heapNumberBox
+window.Controls.Add amountBox
 
-takeButton.Click.Add (fun _ -> ev.Post (Take (1,1)) )
+takeButton.Click.Add (fun _ -> ev.Post (Take ((int amountBox.Text),(int heapNumberBox.Text))) )
 
 clearButton.Click.Add (fun _ -> ev.Post Clear)
 
 cancelButton.Click.Add ( fun _ -> ev.Post Cancel)
 
-loadButton.Click.Add ( fun _ -> ev.Post (Load ( int rowBox.Text, int minBox.Text, int maxBox.Text )))
+loadButton.Click.Add ( fun _ -> ev.Post (Load(int rowBox.Text, int minBox.Text,int maxBox.Text)))
 
 
 // Start
 Async.StartImmediate (ready())
 
-Application.Run(window) (* Mac *)
-//window.Show() (* Windows *)
+//Application.Run(window) (* Mac *)
+window.Show() (* Windows *)
 
 
