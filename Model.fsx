@@ -87,7 +87,7 @@ type AsyncEventQueue<'T>() =
 type Message =
   | Take of (int*int) | Clear | Cancel | Web of string | Error | Cancelled | Load of (int*int*int)
 
-let mutable sticks = [| 5;4;3 |]
+let mutable sticks = [| 1;2;3 |]
 
 let ev:AsyncEventQueue<Message> = AsyncEventQueue()
 
@@ -101,9 +101,6 @@ let makeArray (html:string) =
     ansBox.Text <- sprintf "%A" finishedArray
     finishedArray
 
-
-
-
 let removeSticks n i (a:(int [])) = 
     if n > a.[i] then failwith("Can't take more sticks than there are")
     else a.[i] <- (a.[i]-n)
@@ -113,21 +110,23 @@ let takeAction n h (A:(int [])) =
     ansBox.Text <- sprintf "%A" A
 
 let consURL n min max = sprintf "https://www.random.org/integers/?num=%d&min=%d&max=%d&col=1&base=10&format=plain&rnd=new" n min max
-   
+  
 
 let getM a = Array.fold (fun s v -> s^^^v ) 0 a
 
-let makeZeroMove =
-    let temp = Array.copy sticks
-    for i in 0..(Array.length temp) do
-        for j in 1..temp.[i] do
-            removeSticks j i temp
-            if getM temp = 0 then takeAction j i sticks
+let movePred ak m = (ak ^^^ m) < ak
 
-    
+let makeZeroMove array m =
+    let id = Array.findIndex (fun ak -> movePred ak m ) array
+    let diff = sticks.[id] - sticks.[id] ^^^ m
+    takeAction diff id sticks
+
+                     
 let removeFromBiggest = takeAction 1 (Array.findIndex (fun v -> v = (Array.max sticks)) sticks) sticks
 
-let aiMove = if (getM sticks) = 0 then removeFromBiggest else makeZeroMove
+let aiMove = printf "AIMOVE" 
+             if (getM sticks) = 0 then removeFromBiggest else makeZeroMove sticks (getM sticks)
+
 
 
 let rec ready() = async {
@@ -182,6 +181,7 @@ and player() =
     match msg with
         |Clear -> return! ready()
         |Take (n,h) -> takeAction n h sticks
+                       ansBox.Text <- sprintf "%A" sticks
                        return! AI()
         |_ -> failwith("player: unexpected message")
     }
@@ -192,10 +192,9 @@ and AI() =
 
 
     disable [loadButton;cancelButton]
-
+    printf "AI tur"
     aiMove
-
-    player
+    return! player()
     (*
     let! msg = ev.Receive()
     match msg with
