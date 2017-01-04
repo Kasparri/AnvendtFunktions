@@ -16,14 +16,14 @@ open EventQueue
 // view
 
 let window = 
-  new Form(Text="Nim Game", Size=Size(400,550))
+  new Form(Text="Nim Game", Size=Size(400,550), BackColor = Color.GhostWhite)
 
 let clearButton = 
   new Button(Location=Point(250,70),MinimumSize=Size(100,50),
                MaximumSize=Size(50,50),Text="Clear Game")
 
 let fetchWindow =
-  new Form(Text="Fetching Window", Size=Size(500,200))
+  new Form(Text="Fetching Window", Size=Size(500,200), BackColor = Color.GhostWhite)
 
 let fetchButton =
   new Button(Location=Point(250,10),MinimumSize=Size(100,50),
@@ -93,6 +93,8 @@ let mutable sticks = [| |]
 
 let mutable heapButtons:Button list= [ ]
 
+let mutable taunted = false
+
 let ev:AsyncEventQueue<Message> = AsyncEventQueue()
 
 let victorycheck (A:int[]) =
@@ -125,9 +127,14 @@ let movePred ak m = (ak ^^^ m) < ak
 let makeZeroMove array m =
     let id = Array.findIndex (fun ak -> movePred ak m ) array
     let diff = sticks.[id] - (sticks.[id] ^^^ m)
+    if (not taunted) then ansBox.Text <- sprintf "you will loose -:)"
+    taunted <- true
+    heapButtons.[id].BackColor <- Color.Red
     takeAction diff id sticks
                      
-let removeFromBiggest() = takeAction 1 (Array.findIndex (fun v -> v = (Array.max sticks)) sticks) sticks
+let removeFromBiggest() = let maxIndex = Array.findIndex (fun v -> v = (Array.max sticks)) sticks
+                          heapButtons.[maxIndex].BackColor <- Color.Red
+                          takeAction 1 maxIndex sticks
 
 let aiMove() = if (getM sticks) = 0 then removeFromBiggest() else makeZeroMove sticks (getM sticks)
 
@@ -206,6 +213,9 @@ and AI() =
     then return! finished("Player won")
     else disable [fetchButton;cancelButton]
          aiMove()
+         do! Async.Sleep 1000
+         for i=0 to sticks.Length-1 do
+            heapButtons.[i].ResetBackColor()
          return! player()
     }
 and finished(s) =
@@ -258,8 +268,7 @@ let checkFetchBoxes () =
     if (checkBoxMax heapBox.Text 9) && (checkBox minBox.Text) && (checkBox maxBox.Text)
      then ((int (minBox.Text)) < (int (maxBox.Text)))
      else false
-    
-                                   
+                              
 fetchOKButton.Click.Add ( fun _ -> if checkFetchBoxes() 
                                    then ( ev.Post (Load( (int heapBox.Text) , (int minBox.Text) , (int maxBox.Text) ) ) ) 
                                         ( slider.Maximum <- (int maxBox.Text) )
