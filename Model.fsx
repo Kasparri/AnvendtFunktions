@@ -120,7 +120,6 @@ let makeArray (html:string) =
     let trimmed = html.Trim()
     let array = trimmed.Split (' ', '\n')
     let finishedArray = Array.map int array
-    ansBox.Text <- sprintf "%A" finishedArray
     finishedArray
 
 
@@ -154,10 +153,10 @@ let aiMove() = if (getM sticks) = 0 then removeFromBiggest() else makeZeroMove s
 
 let createHeapButtons() = 
                   for i = 0 to sticks.Length-1 do
-                    let currentButton = new Button(Location=Point(25+(i%3*125) ,300 + ((i/3)*125)),MinimumSize=Size(100,100),MaximumSize=Size(100,100))
+                    let currentButton = new Button(Location=Point(25+(i%3*125) ,200 + ((i/3)*125)),MinimumSize=Size(100,100),MaximumSize=Size(100,100))
                     heapButtons <- currentButton::heapButtons
                     window.Controls.Add currentButton
-                    currentButton.Click.Add (fun _ -> ev.Post ( Take (1,i)))
+                    currentButton.Click.Add (fun _ -> ev.Post ( Take (slider.Value,i)))
                   heapButtons <- List.rev heapButtons
                   setButtonTexts()
 
@@ -224,7 +223,6 @@ and AI() =
     if victorycheck sticks
     then return! finished("Player won")
     else disable [fetchButton;cancelButton]
-         Console.WriteLine "AIs tur"
          aiMove()
          return! player()
     }
@@ -293,8 +291,8 @@ cancelButton.Click.Add ( fun _ -> ev.Post Cancel)
 // Start
 Async.StartImmediate (ready())
 
-Application.Run(window) (* Mac *)
-//window.Show() (* Windows *)
+//Application.Run(window) (* Mac *)
+window.Show() (* Windows *)
 
 
 
