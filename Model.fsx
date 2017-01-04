@@ -144,6 +144,7 @@ and loading(url) =
                           createHeapButtons()
                           return! player()
             | Error -> sticks <- [| 1;2;3 |]
+                       createHeapButtons()
                        return! player()
             | Cancel -> ts.Cancel()
                         return! cancelling()
@@ -236,9 +237,5 @@ cancelFetchButton.Click.Add ( fun _ -> ev.Post Cancel
 // Start
 Async.StartImmediate (ready())
 
-Application.Run(window) (* Mac *)
-//window.Show() (* Windows *)
-
-
-
-
+//Application.Run(window) (* Mac *)
+window.Show() (* Windows *)
