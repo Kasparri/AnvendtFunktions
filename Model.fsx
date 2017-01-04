@@ -27,11 +27,11 @@ let minLabel = new Label(Location=Point(175,15), Text="Min number")
 let maxLabel = new Label(Location=Point(300,15), Text="Max number")
 
 let heapBox = 
-  new TextBox(Location=Point(50,30),Size=Size(125,50), Text="2")
+  new TextBox(Location=Point(50,30),Size=Size(120,50), Text="2")
 let minBox = 
-  new TextBox(Location=Point(175,30),Size=Size(125,50), Text="1")
+  new TextBox(Location=Point(175,30),Size=Size(120,50), Text="1")
 let maxBox = 
-  new TextBox(Location=Point(300,30),Size=Size(125,50), Text="8")
+  new TextBox(Location=Point(300,30),Size=Size(120,50), Text="8")
 
 let fetchOKButton =
   new Button(Location=Point(50,70),MinimumSize=Size(250,50),
@@ -43,6 +43,15 @@ let cancelButton =
 let loadButton = 
   new Button(Location=Point(265,10),MinimumSize=Size(50,25),
                MaximumSize=Size(50,25),Text="Load Game")
+
+
+let slider =
+  new TrackBar(Location=Point(20,40), Minimum=1, Maximum=40, 
+                TickFrequency=1, SmallChange=1, LargeChange=5, Size=Size(200,50))
+let sliderLabel =
+  new Label(Location=Point(20,10), Text="Sticks to remove")
+let sliderBox =
+  new TextBox(Location=Point(150,10), Size=Size(25,25), Text=slider.Value.ToString())
 
 
 let ansBox =
@@ -93,6 +102,16 @@ type AsyncEventQueue<'T>() =
             tryListen cont)
 
 
+let checkBox s = 
+    let mutable result = 0
+    if Int32.TryParse(s, &result) && result > 0 then true
+    else false
+
+let checkBoxMax s max = 
+    let mutable result = 0
+    if Int32.TryParse(s, &result) && result > 0 && result <= max then true
+    else false
+
 
 type Message =
   | Take of (int*int) | Clear | Cancel | Web of string | Error | Cancelled | Load of (int*int*int)
@@ -129,7 +148,6 @@ let makeZeroMove array m =
     let id = Array.findIndex (fun ak -> movePred ak m ) array
     let diff = sticks.[id] - sticks.[id] ^^^ m
     takeAction diff id sticks
-
                      
 let removeFromBiggest() = takeAction 1 (Array.findIndex (fun v -> v = (Array.max sticks)) sticks) sticks
 
@@ -217,6 +235,19 @@ window.Controls.Add ansBox
 window.Controls.Add heapNumberBox
 window.Controls.Add amountBox
 
+window.Controls.Add slider
+window.Controls.Add sliderLabel
+window.Controls.Add sliderBox
+slider.Scroll.Add ( fun _ -> sliderBox.Text <- slider.Value.ToString() )
+
+
+
+
+sliderBox.TextChanged.Add ( fun _ -> if checkBoxMax (sliderBox.Text) (slider.Maximum) 
+                                     then slider.Value <- int sliderBox.Text
+                                     else slider.Value <- slider.Value )
+
+
 
 takeButton.Click.Add (fun _ -> ev.Post (Take ((int amountBox.Text),(int heapNumberBox.Text))) )
 clearButton.Click.Add (fun _ -> ev.Post Clear)
@@ -234,15 +265,28 @@ fetchWindow.Controls.Add maxLabel
 fetchWindow.Controls.Add fetchOKButton
 fetchWindow.Controls.Add cancelButton
 
-fetchOKButton.Click.Add ( fun _ -> ev.Post (Load(int heapBox.Text, int minBox.Text,int maxBox.Text))
-                                   fetchWindow.Close() )
+
+let checkFetchBoxes () =
+    if (checkBoxMax heapBox.Text 9) && (checkBox minBox.Text) && (checkBox maxBox.Text)
+     then ((int (minBox.Text)) < (int (maxBox.Text)))
+     else false
+
+
+
+                                   
+fetchOKButton.Click.Add ( fun _ -> if checkFetchBoxes() 
+                                   then ( ev.Post (Load( (int heapBox.Text) , (int minBox.Text) , (int maxBox.Text) ) ) ) 
+                                        ( fetchWindow.Close() )
+                                   else Console.WriteLine "failure" )
+
+
 cancelButton.Click.Add ( fun _ -> ev.Post Cancel)
 
 // Start
 Async.StartImmediate (ready())
 
-//Application.Run(window) (* Mac *)
-window.Show() (* Windows *)
+Application.Run(window) (* Mac *)
+//window.Show() (* Windows *)
 
 
 
