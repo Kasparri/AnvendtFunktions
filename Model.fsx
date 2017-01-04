@@ -57,22 +57,13 @@ let sliderBox =
 let ansBox =
   new TextBox(Location=Point(150,150),Size=Size(200,25))
 
-let takeButton = 
-  new Button(Location=Point(575,10),MinimumSize=Size(100,75),
-               MaximumSize=Size(100,75),Text="Take!")
-
 let clearButton = 
   new Button(Location=Point(575,650),MinimumSize=Size(100,25),
                MaximumSize=Size(100,25),Text="Clear Game")
 
-let amountBox =
-  new TextBox(Location=Point(575,100),Size=Size(80,25),Text="amount remove")
-
-let heapNumberBox =
-  new TextBox(Location=Point(575,130),Size=Size(80,25),Text="heap number")
 
 let disable bs = 
-    for b in [fetchButton;takeButton;cancelButton;clearButton] do 
+    for b in [fetchButton;cancelButton;clearButton] do 
         b.Enabled  <- true
     for (b:Button) in bs do 
         b.Enabled  <- false
@@ -118,6 +109,8 @@ type Message =
 
 let mutable sticks = [| |]
 
+let mutable heapButtons:Button list= [ ]
+
 let ev:AsyncEventQueue<Message> = AsyncEventQueue()
 
 let victorycheck (A:int[]) =
@@ -130,13 +123,17 @@ let makeArray (html:string) =
     ansBox.Text <- sprintf "%A" finishedArray
     finishedArray
 
-let removeSticks n i (a:(int [])) = 
-    if n > a.[i] then failwith("Can't take more sticks than there are")
-    else a.[i] <- (a.[i]-n)
 
-let takeAction n h (A:(int [])) =
-    removeSticks n h A
-    ansBox.Text <- sprintf "%A" A
+let setButtonTexts() = for i = 0 to sticks.Length-1 do
+                        let text = sprintf "%d" sticks.[i]
+                        heapButtons.[i].Text <- text
+
+let takeAction n i (a:(int [])) =
+    if n > a.[i] then ansBox.Text <- "Can't take more sticks than there are"
+    else 
+          a.[i] <- (a.[i]-n)
+    setButtonTexts()
+    
 
 let consURL n min max = sprintf "https://www.random.org/integers/?num=%d&min=%d&max=%d&col=1&base=10&format=plain&rnd=new" n min max
   
@@ -146,12 +143,23 @@ let movePred ak m = (ak ^^^ m) < ak
 
 let makeZeroMove array m =
     let id = Array.findIndex (fun ak -> movePred ak m ) array
-    let diff = sticks.[id] - sticks.[id] ^^^ m
+    let diff = sticks.[id] - (sticks.[id] ^^^ m)
     takeAction diff id sticks
                      
 let removeFromBiggest() = takeAction 1 (Array.findIndex (fun v -> v = (Array.max sticks)) sticks) sticks
 
 let aiMove() = if (getM sticks) = 0 then removeFromBiggest() else makeZeroMove sticks (getM sticks)
+
+
+
+let createHeapButtons() = 
+                  for i = 0 to sticks.Length-1 do
+                    let currentButton = new Button(Location=Point(25+(i%3*125) ,300 + ((i/3)*125)),MinimumSize=Size(100,100),MaximumSize=Size(100,100))
+                    heapButtons <- currentButton::heapButtons
+                    window.Controls.Add currentButton
+                    currentButton.Click.Add (fun _ -> ev.Post ( Take (1,i)))
+                  heapButtons <- List.rev heapButtons
+                  setButtonTexts()
 
 let rec ready() = async {
          let! msg = ev.Receive()
@@ -173,10 +181,11 @@ and loading(url) =
               (fun _ -> ev.Post Cancelled),
               ts.Token)
         
-         disable [takeButton;clearButton;fetchButton]
+         disable [clearButton;fetchButton]
          let! msg = ev.Receive()
          match msg with
             | Web html -> sticks <- makeArray html
+                          createHeapButtons()
                           return! player()
             | Error -> return! finished("Error")
             | Cancel -> ts.Cancel()
@@ -203,9 +212,11 @@ and player() =
     let! msg = ev.Receive()
     match msg with
         |Clear -> return! ready()
-        |Take (n,h) -> takeAction n h sticks
-                       ansBox.Text <- sprintf "%A" sticks
-                       return! AI()
+        |Take (n,h) -> let before = Array.copy sticks
+                       takeAction n h sticks
+                       if before = sticks then return! player()
+                       else
+                            return! AI()
         |_ -> failwith("player: unexpected message")
     }
 and AI() =
@@ -213,27 +224,24 @@ and AI() =
     if victorycheck sticks
     then return! finished("Player won")
     else disable [fetchButton;cancelButton]
+         Console.WriteLine "AIs tur"
          aiMove()
          return! player()
     }
 and finished(s) =
     async {
     ansBox.Text <- s
-    disable [takeButton;cancelButton]
+    disable [cancelButton]
     let! msg = ev.Receive()
     match msg with
         | Clear -> return! ready()
         | _     ->  failwith("finished: unexpected message")
     }
 
-
 // Initialization
 
-window.Controls.Add takeButton
 window.Controls.Add clearButton
 window.Controls.Add ansBox
-window.Controls.Add heapNumberBox
-window.Controls.Add amountBox
 
 window.Controls.Add slider
 window.Controls.Add sliderLabel
@@ -249,7 +257,7 @@ sliderBox.TextChanged.Add ( fun _ -> if checkBoxMax (sliderBox.Text) (slider.Max
 
 
 
-takeButton.Click.Add (fun _ -> ev.Post (Take ((int amountBox.Text),(int heapNumberBox.Text))) )
+
 clearButton.Click.Add (fun _ -> ev.Post Clear)
 
 
