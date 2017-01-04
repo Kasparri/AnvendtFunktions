@@ -16,7 +16,7 @@ open EventQueue
 // view
 
 let window = 
-  new Form(Text="Nim Game", Size=Size(400,550), BackColor = Color.GhostWhite)
+  new Form(Text="Nim Game", Size=Size(412,565), BackColor = Color.GhostWhite)
 
 let clearButton = 
   new Button(Location=Point(250,70),MinimumSize=Size(100,50),
@@ -128,7 +128,7 @@ let makeZeroMove array m =
     let id = Array.findIndex (fun ak -> movePred ak m ) array
     let diff = sticks.[id] - (sticks.[id] ^^^ m)
     if (not taunted) then ansBox.Text <- sprintf "you will loose -:)"
-    taunted <- true
+                          taunted <- true
     heapButtons.[id].BackColor <- Color.Red
     takeAction diff id sticks
                      
@@ -142,7 +142,7 @@ let aiMove() = if (getM sticks) = 0 then removeFromBiggest() else makeZeroMove s
 
 let createHeapButtons() = 
                   for i = 0 to sticks.Length-1 do
-                    let currentButton = new Button(Location=Point(25+(i%3*125) ,150 + ((i/3)*125)),MinimumSize=Size(100,100),MaximumSize=Size(100,100))
+                    let currentButton = new Button(Location=Point(24+(i%3*125) ,150 + ((i/3)*125)),MinimumSize=Size(100,100),MaximumSize=Size(100,100))
                     heapButtons <- currentButton::heapButtons
                     window.Controls.Add currentButton
                     currentButton.Click.Add (fun _ -> ev.Post ( Take (slider.Value,i)))
@@ -204,6 +204,7 @@ and player() =
                        takeAction n h sticks
                        if before = sticks then return! player()
                        else
+                            ansBox.Text <- ""
                             return! AI()
         |_ -> failwith("player: unexpected message")
     }
@@ -281,8 +282,8 @@ cancelButton.Click.Add ( fun _ -> ev.Post Cancel)
 // Start
 Async.StartImmediate (ready())
 
-Application.Run(window) (* Mac *)
-//window.Show() (* Windows *)
+//Application.Run(window) (* Mac *)
+window.Show() (* Windows *)
 
 
 
