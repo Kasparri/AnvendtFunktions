@@ -10,16 +10,23 @@ open System.Threading
 open System.Windows.Forms 
 open System.Drawing
 
+#r "EventQueue.dll"
+open EventQueue
+
 // view
 
 let window = 
-  new Form(Text="Nim Game", Size=Size(600,600))
+  new Form(Text="Nim Game", Size=Size(400,550))
+
+let clearButton = 
+  new Button(Location=Point(250,70),MinimumSize=Size(100,50),
+               MaximumSize=Size(50,50),Text="Clear Game")
 
 let fetchWindow =
   new Form(Text="Fetching Window", Size=Size(500,200))
 
 let fetchButton =
-  new Button(Location=Point(450,450),MinimumSize=Size(50,50),
+  new Button(Location=Point(250,10),MinimumSize=Size(100,50),
                MaximumSize=Size(50,50),Text="Fetch Button")
 
 let heapLabel = new Label(Location=Point(50,15), Text="Amount of heaps")
@@ -46,20 +53,17 @@ let loadButton =
 
 
 let slider =
-  new TrackBar(Location=Point(20,40), Minimum=1, Maximum=40, 
+  new TrackBar(Location=Point(10,40), Minimum=1, Maximum=40, 
                 TickFrequency=1, SmallChange=1, LargeChange=5, Size=Size(200,50))
 let sliderLabel =
-  new Label(Location=Point(20,10), Text="Sticks to remove")
+  new Label(Location=Point(10,15), Text="Sticks to remove:")
 let sliderBox =
-  new TextBox(Location=Point(150,10), Size=Size(25,25), Text=slider.Value.ToString())
+  new TextBox(Location=Point(110,10), Size=Size(25,20), Text=slider.Value.ToString())
 
 
 let ansBox =
-  new TextBox(Location=Point(150,150),Size=Size(200,25))
+  new TextBox(Location=Point(10,90),Size=Size(200,25))
 
-let clearButton = 
-  new Button(Location=Point(575,650),MinimumSize=Size(100,25),
-               MaximumSize=Size(100,25),Text="Clear Game")
 
 
 let disable bs = 
@@ -70,28 +74,6 @@ let disable bs =
 
 
 // Model
-
-type AsyncEventQueue<'T>() = 
-    let mutable cont = None 
-    let queue = System.Collections.Generic.Queue<'T>()
-    let tryTrigger() = 
-        match queue.Count, cont with 
-        | _, None -> ()
-        | 0, _ -> ()
-        | _, Some d -> 
-            cont <- None
-            d (queue.Dequeue())
-
-    let tryListen(d) = 
-        if cont.IsSome then invalidOp "multicast not allowed"
-        cont <- Some d
-        tryTrigger()
-
-    member x.Post msg = queue.Enqueue msg; tryTrigger()
-    member x.Receive() = 
-        Async.FromContinuations (fun (cont,econt,ccont) -> 
-            tryListen cont)
-
 
 let checkBox s = 
     let mutable result = 0
@@ -153,7 +135,7 @@ let aiMove() = if (getM sticks) = 0 then removeFromBiggest() else makeZeroMove s
 
 let createHeapButtons() = 
                   for i = 0 to sticks.Length-1 do
-                    let currentButton = new Button(Location=Point(25+(i%3*125) ,200 + ((i/3)*125)),MinimumSize=Size(100,100),MaximumSize=Size(100,100))
+                    let currentButton = new Button(Location=Point(25+(i%3*125) ,150 + ((i/3)*125)),MinimumSize=Size(100,100),MaximumSize=Size(100,100))
                     heapButtons <- currentButton::heapButtons
                     window.Controls.Add currentButton
                     currentButton.Click.Add (fun _ -> ev.Post ( Take (slider.Value,i)))
@@ -276,12 +258,11 @@ let checkFetchBoxes () =
     if (checkBoxMax heapBox.Text 9) && (checkBox minBox.Text) && (checkBox maxBox.Text)
      then ((int (minBox.Text)) < (int (maxBox.Text)))
      else false
-
-
-
+    
                                    
 fetchOKButton.Click.Add ( fun _ -> if checkFetchBoxes() 
                                    then ( ev.Post (Load( (int heapBox.Text) , (int minBox.Text) , (int maxBox.Text) ) ) ) 
+                                        ( slider.Maximum <- (int maxBox.Text) )
                                         ( fetchWindow.Close() )
                                    else Console.WriteLine "failure" )
 
@@ -291,8 +272,8 @@ cancelButton.Click.Add ( fun _ -> ev.Post Cancel)
 // Start
 Async.StartImmediate (ready())
 
-//Application.Run(window) (* Mac *)
-window.Show() (* Windows *)
+Application.Run(window) (* Mac *)
+//window.Show() (* Windows *)
 
 
 
