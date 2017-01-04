@@ -19,19 +19,35 @@ let window =
   new Form(Text="Nim Game", Size=Size(412,565), BackColor = Color.GhostWhite)
 
 let clearButton = 
-  new Button(Location=Point(250,70),MinimumSize=Size(100,50),
+  new Button(Location=Point(270,70),MinimumSize=Size(100,50),
                MaximumSize=Size(50,50),Text="Clear Game")
 
 let fetchWindow =
-  new Form(Text="Fetching Window", Size=Size(500,200), BackColor = Color.GhostWhite)
+  new Form(Text="Fetching Window", Size=Size(500,300), BackColor = Color.GhostWhite)
 
 let fetchButton =
-  new Button(Location=Point(250,10),MinimumSize=Size(100,50),
+  new Button(Location=Point(270,10),MinimumSize=Size(100,50),
                MaximumSize=Size(50,50),Text="Fetch Button")
 
 let heapLabel = new Label(Location=Point(50,15), Text="Amount of heaps")
 let minLabel = new Label(Location=Point(175,15), Text="Min number")
 let maxLabel = new Label(Location=Point(300,15), Text="Max number")
+
+let toDifficulty = function
+    |i when i>75 -> "Very Easy"
+    |i when i>=50 -> "Easy"
+    |i when i>25 -> "Hard"
+    |i when i>10 -> "Very Hard"
+    |i -> "Impossible"
+
+
+let difficultySlider =
+  new TrackBar(Location=Point(10,150), Minimum=1, Maximum=100, 
+                TickFrequency=1, SmallChange=1, LargeChange=5, Size=Size(200,50))
+let difficultySliderLabel =
+  new Label(Location=Point(10,125), Text="Difficulty:")
+let difficultySliderBox =
+  new TextBox(Location=Point(110,120), Size=Size(100,20), Text= toDifficulty difficultySlider.Value)
 
 let heapBox = 
   new TextBox(Location=Point(50,30),Size=Size(120,50), Text="2")
@@ -124,21 +140,40 @@ let getM a = Array.fold (fun s v -> s^^^v ) 0 a
 
 let movePred ak m = (ak ^^^ m) < ak
 
+let difficultyCheck() = 
+                        let rand = System.Random()
+                        rand.Next (1,100) >= difficultySlider.Value
+
+let randomHeap() = let rand = System.Random()
+                   let index = rand.Next(1, ((sticks.Length)-1))
+                   if sticks.[index] > 0 then (rand.Next (1,sticks.[index]),index)
+                   else (0,0)
+
+
 let makeZeroMove array m =
-    let id = Array.findIndex (fun ak -> movePred ak m ) array
-    let diff = sticks.[id] - (sticks.[id] ^^^ m)
-    if (not taunted) then ansBox.Text <- sprintf "you will loose -:)"
-                          taunted <- true
-    heapButtons.[id].BackColor <- Color.Red
-    takeAction diff id sticks
+    if difficultyCheck() then 
+        Console.WriteLine "Making a smart move"
+        let id = Array.findIndex (fun ak -> movePred ak m ) array
+        let diff = sticks.[id] - (sticks.[id] ^^^ m)
+        if (not taunted) then ansBox.Text <- sprintf "you will loose -:)"
+                              taunted <- true
+        heapButtons.[id].BackColor <- Color.Red
+        takeAction diff id sticks
+    else
+        Console.WriteLine "Making a dumb move"
+        if taunted then ansBox.Text <- "Oops"
+                        taunted <- false
+        let (amount,heap) = randomHeap()
+        heapButtons.[heap].BackColor <- Color.Red
+        takeAction amount heap sticks
+
+
                      
 let removeFromBiggest() = let maxIndex = Array.findIndex (fun v -> v = (Array.max sticks)) sticks
                           heapButtons.[maxIndex].BackColor <- Color.Red
                           takeAction 1 maxIndex sticks
 
 let aiMove() = if (getM sticks) = 0 then removeFromBiggest() else makeZeroMove sticks (getM sticks)
-
-
 
 let createHeapButtons() = 
                   for i = 0 to sticks.Length-1 do
@@ -226,6 +261,7 @@ and finished(s) =
     let! msg = ev.Receive()
     match msg with
         | Clear -> return! ready()
+        | Load (n,min,max) -> return! loading(consURL n min max)
         | _     ->  failwith("finished: unexpected message")
     }
 
@@ -239,15 +275,9 @@ window.Controls.Add sliderLabel
 window.Controls.Add sliderBox
 slider.Scroll.Add ( fun _ -> sliderBox.Text <- slider.Value.ToString() )
 
-
-
-
 sliderBox.TextChanged.Add ( fun _ -> if checkBoxMax (sliderBox.Text) (slider.Maximum) 
                                      then slider.Value <- int sliderBox.Text
                                      else slider.Value <- slider.Value )
-
-
-
 
 clearButton.Click.Add (fun _ -> ev.Post Clear)
 
@@ -263,6 +293,11 @@ fetchWindow.Controls.Add minLabel
 fetchWindow.Controls.Add maxLabel
 fetchWindow.Controls.Add fetchOKButton
 fetchWindow.Controls.Add cancelButton
+fetchWindow.Controls.Add difficultySlider
+fetchWindow.Controls.Add difficultySliderLabel
+fetchWindow.Controls.Add difficultySliderBox
+
+difficultySlider.Scroll.Add ( fun _ -> difficultySliderBox.Text <- toDifficulty difficultySlider.Value)
 
 
 let checkFetchBoxes () =
@@ -276,7 +311,6 @@ fetchOKButton.Click.Add ( fun _ -> if checkFetchBoxes()
                                         ( fetchWindow.Close() )
                                    else Console.WriteLine "failure" )
 
-
 cancelButton.Click.Add ( fun _ -> ev.Post Cancel)
 
 // Start
@@ -284,7 +318,3 @@ Async.StartImmediate (ready())
 
 //Application.Run(window) (* Mac *)
 window.Show() (* Windows *)
-
-
-
-
