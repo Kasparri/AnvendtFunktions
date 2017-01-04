@@ -19,10 +19,10 @@ let window =
   new Form(Text="Nim Game", Size=Size(412,565), BackColor = Color.GhostWhite)
 
 let clearButton = 
-  new Button(Location=Point(270,70),MinimumSize=Size(100,50),
+  new Button(Location=Point(250,70),MinimumSize=Size(100,50),
                MaximumSize=Size(50,50),Text="Clear Game")
 
-let fetchWindow = new Form(Text="Fetching Window", Size=Size(500,200), 
+let fetchWindow = new Form(Text="Fetching Window", Size=Size(500,300), 
                            BackColor = Color.GhostWhite, ControlBox = false)
 
 let fetchButton =
@@ -46,12 +46,12 @@ let toDifficulty = function
 
 
 let difficultySlider =
-  new TrackBar(Location=Point(10,150), Minimum=1, Maximum=100, 
+  new TrackBar(Location=Point(150,200), Minimum=1, Maximum=100, 
                 TickFrequency=1, SmallChange=1, LargeChange=5, Size=Size(200,50))
 let difficultySliderLabel =
-  new Label(Location=Point(10,125), Text="Difficulty:")
+  new Label(Location=Point(140,155), Text="Difficulty:")
 let difficultySliderBox =
-  new TextBox(Location=Point(110,120), Size=Size(100,20), Text= toDifficulty difficultySlider.Value)
+  new TextBox(Location=Point(260,150), Size=Size(90,20), Text= toDifficulty difficultySlider.Value)
 
 let heapBox = 
   new TextBox(Location=Point(50,30),Size=Size(120,50), Text="2")
@@ -61,8 +61,12 @@ let maxBox =
   new TextBox(Location=Point(300,30),Size=Size(120,50), Text="8")
 
 let fetchOKButton =
-  new Button(Location=Point(50,70),MinimumSize=Size(375,50),
-                MaximumSize=Size(375,50),Text="Fetching OK")
+  new Button(Location=Point(50,70),MinimumSize=Size(290,50),
+                MaximumSize=Size(290,50),Text="Fetching OK")
+
+let cancelFetchButton =
+    new Button(Location=Point(350,70), MinimumSize=Size(100,50),
+                  MaximumSize=Size(100,50),Text="Cancel")
 
 
 let slider =
@@ -77,10 +81,8 @@ let sliderBox =
 let ansBox =
   new TextBox(Location=Point(10,90),Size=Size(200,25))
 
-
-
 let disable bs = 
-    for b in [fetchButton;cancelButton;clearButton;fetchOKButton] do 
+    for b in [fetchButton;cancelButton;clearButton;fetchOKButton;cancelFetchButton] do 
         b.Enabled  <- true
     for (b:Button) in bs do 
         b.Enabled  <- false
@@ -150,7 +152,7 @@ let makeZeroMove array m =
         Console.WriteLine "Making a smart move"
         let id = Array.findIndex (fun ak -> movePred ak m ) array
         let diff = sticks.[id] - (sticks.[id] ^^^ m)
-        if (not taunted) then ansBox.Text <- sprintf "you will loose -:)"
+        if (not taunted) then ansBox.Text <- sprintf "you will lose ( ͠° ͟ʖ ͡°)"
                               taunted <- true
         heapButtons.[id].BackColor <- Color.Red
         takeAction diff id sticks
@@ -184,7 +186,7 @@ let createHeapButtons() =
 let rec ready() = async {
          Console.WriteLine "Ready()"
 
-         disable [cancelButton;fetchOKButton]
+         disable [cancelButton;fetchOKButton;cancelFetchButton]
          let! msg = ev.Receive()
          match msg with
             | Clear -> return! ready()
@@ -217,7 +219,7 @@ and loading(url) =
               (fun _ -> ev.Post Cancelled),
               ts.Token)
         
-         disable [clearButton;fetchButton;fetchOKButton]
+         disable [clearButton;fetchButton;fetchOKButton;cancelFetchButton]
          let! msg = ev.Receive()
          match msg with
             | Web html -> sticks <- makeArray html
@@ -233,7 +235,7 @@ and cancelling() =
   Console.WriteLine "Cancelling()"
   async {
          
-         disable [clearButton; cancelButton]
+         disable [clearButton; cancelButton;cancelFetchButton]
          let! msg = ev.Receive()
          match msg with
          | Cancelled | Error | Web  _ ->
@@ -245,7 +247,7 @@ and player() =
     async {
     if victorycheck sticks then return! finished("AI won") 
     else
-    disable [fetchButton;fetchOKButton;cancelButton]
+    disable [fetchButton;fetchOKButton;cancelButton;cancelFetchButton]
 
     let! msg = ev.Receive()
     match msg with
@@ -275,7 +277,7 @@ and finished(s) =
     Console.WriteLine "Finished()"
     async {
     ansBox.Text <- s
-    disable [cancelButton;fetchButton;fetchOKButton]
+    disable [cancelButton;fetchButton;fetchOKButton;cancelFetchButton]
     let! msg = ev.Receive()
     match msg with
         | Clear -> resetVariables()
@@ -303,6 +305,7 @@ fetchWindow.Controls.Add heapLabel
 fetchWindow.Controls.Add minLabel
 fetchWindow.Controls.Add maxLabel
 fetchWindow.Controls.Add fetchOKButton
+fetchWindow.Controls.Add cancelFetchButton
 fetchWindow.Controls.Add difficultySlider
 fetchWindow.Controls.Add difficultySliderLabel
 fetchWindow.Controls.Add difficultySliderBox
@@ -327,17 +330,15 @@ clearButton.Click.Add ( fun _ -> ansBox.Text <- ""
 
 difficultySlider.Scroll.Add ( fun _ -> difficultySliderBox.Text <- toDifficulty difficultySlider.Value)
 
-
-let checkFetchBoxes () =
-    if (checkBoxMax heapBox.Text 9) && (checkBox minBox.Text) && (checkBox maxBox.Text)
-     then ((int (minBox.Text)) < (int (maxBox.Text)))
-     else false
                               
 fetchOKButton.Click.Add ( fun _ -> if checkFetchBoxes() 
                                    then ( ev.Post (Load( (int heapBox.Text) , (int minBox.Text) , (int maxBox.Text) ) ) ) 
                                         ( slider.Maximum <- (int maxBox.Text) )
                                         ( fetchWindow.Hide() )
                                    else ev.Post Clear )
+
+cancelFetchButton.Click.Add ( fun _ -> ev.Post Cancel
+                                       fetchWindow.Hide() )
 
 // Start
 Async.StartImmediate (ready())
