@@ -188,9 +188,11 @@ and loading(url) =
          match msg with
             | Web html -> sticks <- makeArray html
                           createHeapButtons()
+                          ansBox.Text <- "Loaded game from Random.org"
                           return! player()
             | Error -> sticks <- generateGame (int heapBox.Text) (int minBox.Text) (int maxBox.Text)
                        createHeapButtons()
+                       ansBox.Text <- "Generated game offline"
                        return! player()
             | Cancel -> ts.Cancel()
                         return! cancelling()
@@ -203,6 +205,7 @@ and creating(h,min,max) =
                     cancelGenerateButton;generateOKButton;cancelButton;generateButton]
            sticks <- generateGame h min max
            createHeapButtons()
+           ansBox.Text <- "Generated game offline"
            return! player()
        }
 and cancelling() = 
@@ -274,8 +277,10 @@ clearButton.Click.Add ( fun _ -> ansBox.Text <- ""
 
 slider.Scroll.Add ( fun _ -> sliderBox.Text <- slider.Value.ToString() )
 sliderBox.TextChanged.Add ( fun _ -> if checkBoxMax (sliderBox.Text) (slider.Maximum) 
-                                     then slider.Value <- int sliderBox.Text
-                                     else slider.Value <- slider.Value )
+                                     then ansBox.Text <- ""
+                                          slider.Value <- int sliderBox.Text
+                                     else ansBox.Text <- sprintf "Amount has to be between 1 and %d" slider.Maximum
+                                          slider.Value <- slider.Value )
 
 
 (* Fetch window *)
@@ -306,5 +311,5 @@ gdifficultySlider.Scroll.Add ( fun _ -> gdifficultySliderBox.Text <- toDifficult
 // Start the program
 Async.StartImmediate (ready())
 
-Application.Run(window) (* Mac *)
-//window.Show() (* Windows *)
+//Application.Run(window) (* Mac *)
+window.Show() (* Windows *)
