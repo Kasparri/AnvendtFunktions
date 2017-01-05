@@ -6,6 +6,37 @@
 
 open View.fsx
 
+let ev:AsyncEventQueue<Message> = AsyncEventQueue()
+
+
+let checkBox s = 
+    let mutable result = 0
+    if Int32.TryParse(s, &result) && result > 0 then true
+    else false
+
+let checkBoxMax s max = 
+    let mutable result = 0
+    if Int32.TryParse(s, &result) && result > 0 && result <= max then true
+    else false
+
+let checkFetchBoxes () =
+    if (checkBoxMax heapBox.Text 9) && (checkBox minBox.Text) && (checkBox maxBox.Text)
+     then ((int (minBox.Text)) < (int (maxBox.Text)))
+     else false
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // events
 
 slider.Scroll.Add ( fun _ -> sliderBox.Text <- slider.Value.ToString() )
