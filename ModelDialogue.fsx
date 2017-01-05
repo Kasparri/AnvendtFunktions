@@ -106,7 +106,7 @@ let makeZeroMove array m =
     if difficultyCheck difficultySlider.Value then 
         let id = Array.findIndex (fun ak -> movePred ak m ) array
         let diff = sticks.[id] - (sticks.[id] ^^^ m)
-        if (not taunted) then ansBox.Text <- sprintf "you will lose ( ͠° ͟ʖ ͡°)"
+        if (not taunted) then ansBox.Text <- sprintf "you will lose :-)"
                               taunted <- true
         heapButtons.[id].BackColor <- Color.Red
         takeAction diff id sticks
@@ -306,5 +306,5 @@ gdifficultySlider.Scroll.Add ( fun _ -> gdifficultySliderBox.Text <- toDifficult
 // Start the program
 Async.StartImmediate (ready())
 
-//Application.Run(window) (* Mac *)
-window.Show() (* Windows *)
+Application.Run(window) (* Mac *)
+//window.Show() (* Windows *)
