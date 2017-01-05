@@ -22,14 +22,14 @@ let toDifficulty = function
 (* Main window *)
 let window = new Form(Text="Nim Game", Size=Size(412,565), BackColor = Color.GhostWhite)
 
-let clearButton = new Button(Location=Point(250,70),MinimumSize=Size(45,50),
-                             MaximumSize=Size(45,50),Text="Clear Game")
-let fetchButton = new Button(Location=Point(250,10),MinimumSize=Size(45,50),
-                             MaximumSize=Size(45,50),Text="Fetch Game")      
-let cancelButton = new Button(Location=Point(300,10),MinimumSize=Size(45,50),
-                              MaximumSize=Size(45,50),Text="Cancel Fetch")
-let generateButton = new Button(Location=Point(300,70),MinimumSize=Size(45,50),
-                              MaximumSize=Size(45,50),Text="Gener Game")
+let clearButton = new Button(Location=Point(250,70),MinimumSize=Size(50,50),
+                             MaximumSize=Size(50,50),Text="Clear Game")
+let fetchButton = new Button(Location=Point(250,10),MinimumSize=Size(50,50),
+                             MaximumSize=Size(50,50),Text="Fetch Game")      
+let cancelButton = new Button(Location=Point(305,10),MinimumSize=Size(50,50),
+                              MaximumSize=Size(50,50),Text="Cancel Fetch")
+let generateButton = new Button(Location=Point(305,70),MinimumSize=Size(50,50),
+                              MaximumSize=Size(50,50),Text="Gen. Game")
 
 let slider = new TrackBar(Location=Point(10,40), Minimum=1, Maximum=40, Size=Size(200,50), 
                           TickFrequency=1, SmallChange=1, LargeChange=5)
