@@ -311,5 +311,5 @@ gdifficultySlider.Scroll.Add ( fun _ -> gdifficultySliderBox.Text <- toDifficult
 // Start the program
 Async.StartImmediate (ready())
 
-//Application.Run(window) (* Mac *)
-window.Show() (* Windows *)
+Application.Run(window) (* Mac *)
+//window.Show() (* Windows *)
