@@ -1,0 +1,3 @@
+/Users/Kasper/Workspace/AnvendtFunktions/Project2/GuardedCommands/GuardedCommands/obj/Debug/.NETFramework,Version=v4.5.AssemblyAttribute.fs
+/Users/Kasper/Workspace/AnvendtFunktions/Project2/GuardedCommands/GuardedCommands/obj/Debug/GuardedCommands.dll
+/Users/Kasper/Workspace/AnvendtFunktions/Project2/GuardedCommands/GuardedCommands/obj/Debug/GuardedCommands.pdb

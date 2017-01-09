@@ -14,20 +14,21 @@ module TypeCheck =
          | B _              -> BTyp   
          | Access acc       -> tcA gtenv ltenv acc     
                    
-         | Apply(f,[e]) when List.exists (fun x ->  x=f) ["-"]  
+         | Apply(f,[e]) when List.exists (fun x ->  x=f) ["-"; "!"]  
                             -> tcMonadic gtenv ltenv f e        
 
-         | Apply(f,[e1;e2]) when List.exists (fun x ->  x=f) ["+";"*"; "="; "&&"]        
+         | Apply(f,[e1;e2]) when List.exists (fun x ->  x=f) ["+";"*";"-"; "="; "&&"]        
                             -> tcDyadic gtenv ltenv f e1 e2   
 
          | _                -> failwith "tcE: not supported yet"
 
    and tcMonadic gtenv ltenv f e = match (f, tcE gtenv ltenv e) with
                                    | ("-", ITyp) -> ITyp
+                                   | ("!", BTyp) -> BTyp
                                    | _           -> failwith "illegal/illtyped monadic expression" 
    
    and tcDyadic gtenv ltenv f e1 e2 = match (f, tcE gtenv ltenv e1, tcE gtenv ltenv e2) with
-                                      | (o, ITyp, ITyp) when List.exists (fun x ->  x=o) ["+";"*"]  -> ITyp
+                                      | (o, ITyp, ITyp) when List.exists (fun x ->  x=o) ["+";"*";"-"]  -> ITyp
                                       | (o, ITyp, ITyp) when List.exists (fun x ->  x=o) ["="] -> BTyp
                                       | (o, BTyp, BTyp) when List.exists (fun x ->  x=o) ["&&";"="]     -> BTyp 
                                       | _                      -> failwith("illegal/illtyped dyadic expression: " + f)
@@ -59,6 +60,11 @@ module TypeCheck =
                                          else failwith "illtyped assignment"                                
 
                          | Block([],stms) -> List.iter (tcS gtenv ltenv) stms
+
+                         | Alt gc  -> tcGC gtenv ltenv gc
+                         | Do (GC []) -> ()
+                         | Do  gc  -> tcGC gtenv ltenv gc
+                                     
                          | _              -> failwith "tcS: this statement is not supported yet"
 
    and tcGDec gtenv = function  
@@ -69,6 +75,19 @@ module TypeCheck =
                        | dec::decs -> tcGDecs (tcGDec gtenv dec) decs
                        | _         -> gtenv
 
+
+/// tcGS gtenv ltenv gc checks the well-typeness of a guarded command on the basis of type environments gtenv and ltenv
+/// for global and local variables and the possible type of return expressions 
+   
+   and tcGC gtenv ltenv = function
+       | GC ((e, stms)::[])  ->  if tcE gtenv ltenv e = BTyp
+                                 then List.iter (tcS gtenv Map.empty) stms
+                                 else failwith "ill typed condition"
+       | GC ((e, stms)::rest) -> if tcE gtenv ltenv e = BTyp
+                                 then List.iter (tcS gtenv Map.empty) stms
+                                      tcGC gtenv ltenv (GC rest)
+                                 else failwith "ill typed condition" 
+       | GC []               ->  failwith "illtyped guarded command" 
 
 /// tcP prog checks the well-typeness of a program prog
    and tcP(P(decs, stms)) = let gtenv = tcGDecs Map.empty decs

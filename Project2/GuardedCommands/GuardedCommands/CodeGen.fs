@@ -31,16 +31,18 @@ module CodeGeneration =
        | Access acc   -> CA vEnv fEnv acc @ [LDI] 
 
        | Apply("-", [e]) -> CE vEnv fEnv e @  [CSTI 0; SWAP; SUB]
+       | Apply("!", [e]) -> CE vEnv fEnv e @  [NOT]
 
        | Apply("&&",[b1;b2]) -> let labend   = newLabel()
                                 let labfalse = newLabel()
                                 CE vEnv fEnv b1 @ [IFZERO labfalse] @ CE vEnv fEnv b2
                                 @ [GOTO labend; Label labfalse; CSTI 0; Label labend]
 
-       | Apply(o,[e1;e2]) when List.exists (fun x -> o=x) ["+"; "*"; "="]
+       | Apply(o,[e1;e2]) when List.exists (fun x -> o=x) ["+"; "*"; "-"; "="]
                              -> let ins = match o with
                                           | "+"  -> [ADD]
                                           | "*"  -> [MUL]
+                                          | "-"  -> [SUB]
                                           | "="  -> [EQ] 
                                           | _    -> failwith "CE: this case is not possible"
                                 CE vEnv fEnv e1 @ CE vEnv fEnv e2 @ ins 
@@ -75,9 +77,30 @@ module CodeGeneration =
 
        | Ass(acc,e)       -> CA vEnv fEnv acc @ CE vEnv fEnv e @ [STI; INCSP -1]
 
-       | Block([],stms) ->   CSs vEnv fEnv stms
+       | Block([],stms)   -> CSs vEnv fEnv stms
 
+       | Alt gc -> let labend = newLabel()
+                   let labnext = newLabel()
+                   let labStop = newLabel()
+                   match gc with
+                   | GC ((e,stms)::[]  ) -> CE vEnv fEnv e @ [IFZERO labStop] @ CSs vEnv fEnv stms @ [GOTO labend;
+                                              Label labStop; STOP]
+                   | GC ((e,stms)::rest) -> CE vEnv fEnv e @ [IFZERO labnext] @ CSs vEnv fEnv stms @ [GOTO labend;
+                                              Label labnext] @ CS vEnv fEnv (Alt (GC rest))
+                   | _ -> [STOP]
+                   @ [Label labend]
+       | Do gc ->  let labstart = newLabel()
+                   let labend = newLabel()
+                   let labnext = newLabel()
+                   [Label labstart] @
+                   match gc with
+                   | GC ((e,stms)::[]  ) -> CE vEnv fEnv e @ [IFZERO labend] @ CSs vEnv fEnv stms @ [GOTO labstart]
+                   | GC ((e,stms)::rest) -> CE vEnv fEnv e @ [IFZERO labnext] @ CSs vEnv fEnv stms @ [GOTO labstart; 
+                                            Label labnext] @ CS vEnv fEnv (Do (GC rest))
+                   | _ -> []
+                   @ [Label labend]
        | _                -> failwith "CS: this statement is not supported yet"
+
 
    and CSs vEnv fEnv stms = List.collect (CS vEnv fEnv) stms 
 

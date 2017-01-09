@@ -2,9 +2,10 @@
 
 // You must revise 4 pathes occurring in this file 
 // The first three are:
-#r @"C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\bin\Debug\FSharp.PowerPack.dll";;
-#r @"C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\bin\Debug\Machine.dll";
-#r @"C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\bin\Debug\\VirtualMachine.dll";
+
+#r @"bin/Debug/FSharp.PowerPack.dll";;
+#r @"bin/Debug/Machine.dll";
+#r @"bin/Debug/virtualMachine.dll";
 
 #load "AST.fs"
 #load "Parser.fs"
@@ -27,11 +28,13 @@ open Machine
 open VirtualMachine
 
 // You must revise this path
-System.IO.Directory.SetCurrentDirectory @"C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands";;
+//System.IO.Directory.SetCurrentDirectory @"C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands";;
+System.IO.Directory.SetCurrentDirectory @"/Users/Kasper/Workspace/AnvendtFunktions/Project2/GuardedCommands/GuardedCommands";;
+//System.IO.Directory.SetCurrentDirectory @"../GuardedCommands";;
 
 // The Ex0.gc example:
 
-let ex0Tree = parseFromFile "Ex0.gc";;
+let ex0Tree = parseFromFile "Skip.gc";;
 
 let _ = tcP ex0Tree;;
 
