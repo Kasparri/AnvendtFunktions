@@ -5,7 +5,7 @@
 
 #r @"bin/Debug/FSharp.PowerPack.dll";;
 #r @"bin/Debug/Machine.dll";
-#r @"bin/Debug/virtualMachine.dll";
+#r @"bin/Debug/VirtualMachine.dll";
 
 #load "AST.fs"
 #load "Parser.fs"
@@ -28,9 +28,7 @@ open Machine
 open VirtualMachine
 
 // You must revise this path
-//System.IO.Directory.SetCurrentDirectory @"C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands";;
-System.IO.Directory.SetCurrentDirectory @"/Users/Kasper/Workspace/AnvendtFunktions/Project2/GuardedCommands/GuardedCommands";;
-//System.IO.Directory.SetCurrentDirectory @"../GuardedCommands";;
+System.IO.Directory.SetCurrentDirectory @"../GuardedCommands";;
 
 // The Ex0.gc example:
 
