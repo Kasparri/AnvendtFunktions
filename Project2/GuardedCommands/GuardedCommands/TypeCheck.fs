@@ -19,7 +19,7 @@ module TypeCheck =
 
          | Apply(f,[e1;e2]) when List.exists (fun x ->  x=f) ["+";"*";"-"; "="; "&&"]        
                             -> tcDyadic gtenv ltenv f e1 e2   
-         | Apply(f,es) when Map.containsKey f gtenv -> tcNaryFunction gtenv ltenv f es
+         | Apply(f,es) -> tcNaryFunction gtenv ltenv f es
 
          | _                -> failwith "tcE: not supported yet"
 
@@ -34,7 +34,17 @@ module TypeCheck =
                                       | (o, BTyp, BTyp) when List.exists (fun x ->  x=o) ["&&";"="]     -> BTyp 
                                       | _                      -> failwith("illegal/illtyped dyadic expression: " + f)
 
-   and tcNaryFunction gtenv ltenv f es = failwith "type check: functions not supported yet"
+   and tcNaryFunction gtenv ltenv f es = match Map.tryFind f gtenv with
+                                         | None -> failwith "Function not declared"
+                                         | Some (FTyp (typs,topt)) when es.Length = typs.Length -> for i in 0..(typs.Length-1) do
+                                                                                                        if (typs.[i] <> tcE gtenv ltenv es.[i]) 
+                                                                                                        then failwith "Parameters are of the wrong types"
+                                                                                                   match topt with
+                                                                                                    | None -> failwith "Procedures are not functions"
+                                                                                                    | Some t -> t 
+                                                                                                   
+                                         | Some (FTyp (typs,topt)) -> failwith "Wrong number of parameters"
+                                         | _ -> failwith "WhAt?"
  
    and tcNaryProcedure gtenv ltenv f es = failwith "type check: procedures not supported yet"
       
@@ -77,9 +87,10 @@ module TypeCheck =
    and tcGDec gtenv ltenv = function  
                       | VarDec(t,s)               -> Map.add s t gtenv
                       | FunDec(topt,f, decs, stm) -> let typeList = decsToTypes decs []
-                                                     ignore(tcS gtenv (Map.add f (FTyp (typeList, topt)) ltenv)  stm)
-                                                     Map.add f (FTyp (typeList, topt)) gtenv
-                                                     //TODO Allow recursive definitions
+                                                     let newGtenv = tcGDecs (Map.add f (FTyp (typeList, topt)) gtenv) ltenv decs
+                                                     ignore(tcS newGtenv (Map.add f (FTyp (typeList, topt)) ltenv)  stm)
+                                                     newGtenv
+                                                     //TODO Allow recursive declarations
 
    and tcGDecs gtenv ltenv = function
                        | dec::decs -> tcGDecs (tcGDec gtenv ltenv dec) ltenv decs
@@ -87,20 +98,22 @@ module TypeCheck =
 
    and decsToTypes decs seen = match decs with
                                | [] -> []
-                               | VarDec(t,s)::decs' when List.exists (fun v -> v=t) seen -> failwith "Two params were equal"
-                               | VarDec(t,s)::decs' -> t::(decsToTypes decs' (t::seen))
-                               | FunDec(topt,f,decs,stm)::_ -> failwith "Functions as parameters not supported"
+                               | VarDec(t,s)::decs' when List.exists (fun v -> v=s) seen -> failwith "Two params were equal"
+                               | VarDec(t,s)::decs' -> t::(decsToTypes decs' (s::seen))
+                               | FunDec(topt,f,decs,stm)::decs' when List.exists (fun v -> v=f) seen -> failwith "Two params were equal"
+                               | FunDec(topt,f,decs,stm)::decs' -> match topt with
+                                                                   |None -> failwith"A void function was used as a statement"
+                                                                   |Some t -> t::(decsToTypes decs' (f::seen))
 
 
 /// tcGS gtenv ltenv gc checks the well-typeness of a guarded command on the basis of type environments gtenv and ltenv
 /// for global and local variables and the possible type of return expressions 
-   
    and tcGC gtenv ltenv = function
        | GC ((e, stms)::[])  ->  if tcE gtenv ltenv e = BTyp
-                                 then List.iter (tcS gtenv Map.empty) stms
+                                 then List.iter (tcS gtenv ltenv) stms
                                  else failwith "ill typed condition"
        | GC ((e, stms)::rest) -> if tcE gtenv ltenv e = BTyp
-                                 then List.iter (tcS gtenv Map.empty) stms
+                                 then List.iter (tcS gtenv ltenv) stms
                                       tcGC gtenv ltenv (GC rest)
                                  else failwith "ill typed condition" 
        | GC []               ->  failwith "illtyped guarded command" 
