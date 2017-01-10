@@ -28,6 +28,8 @@ type token =
   | OD
   | BEGIN
   | END
+  | FUNCTION
+  | RETURN
   | LP
   | LCP
   | LSP
@@ -68,6 +70,8 @@ type tokenId =
     | TOKEN_OD
     | TOKEN_BEGIN
     | TOKEN_END
+    | TOKEN_FUNCTION
+    | TOKEN_RETURN
     | TOKEN_LP
     | TOKEN_LCP
     | TOKEN_LSP
@@ -98,11 +102,13 @@ type nonTerminalId =
     | NONTERM_StmList
     | NONTERM_GuardedCommand
     | NONTERM_GCList
+    | NONTERM_ExpL
+    | NONTERM_ExpList
     | NONTERM_Exp
-/// This function maps integers indexes to symbolic token ids
+/// This function maps tokens to integer indexes
 val tagOfToken: token -> int
 
-/// This function maps integers indexes to symbolic token ids
+/// This function maps integer indexes to symbolic token ids
 val tokenTagToTokenId: int -> tokenId
 
 /// This function maps production indexes returned in syntax errors to strings representing the non terminal that would be produced by that production

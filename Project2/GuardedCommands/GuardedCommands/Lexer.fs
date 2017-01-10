@@ -1,4 +1,4 @@
-# 1 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fsl"
+# 1 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fsl"
  
 module Lexer
 open System
@@ -19,11 +19,13 @@ let keyword s =
     | "fi"        -> FI 
     | "do"        -> DO
     | "od"        -> OD     
+    | "function"  -> FUNCTION
+    | "return"    -> RETURN
     | "true"      -> BOOL(true) 
     | "false"     -> BOOL(false)
     | _           -> NAME s  
 
-# 26 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fs"
+# 28 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fs"
 let trans : uint16[] array = 
     [| 
    (* State 0 *)
@@ -100,142 +102,140 @@ and tokenize  (lexbuf : Microsoft.FSharp.Text.Lexing.LexBuffer<_>) = _fslex_toke
 and _fslex_tokenize  _fslex_state lexbuf =
   match _fslex_tables.Interpret(_fslex_state,lexbuf) with
   | 0 -> ( 
-# 39 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fsl"
+# 41 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fsl"
                                  tokenize lexbuf 
-# 105 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fs"
+# 107 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fs"
           )
   | 1 -> ( 
-# 40 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fsl"
+# 42 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fsl"
                                  lexbuf.EndPos <- lexbuf.EndPos.NextLine; tokenize lexbuf 
-# 110 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fs"
+# 112 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fs"
           )
   | 2 -> ( 
-# 41 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fsl"
+# 43 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fsl"
                                  INT<| Int32.Parse(Encoding.UTF8.GetString(lexbuf.Lexeme)) 
-# 115 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fs"
+# 117 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fs"
           )
   | 3 -> ( 
-# 42 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fsl"
+# 44 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fsl"
                                  LP  
-# 120 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fs"
+# 122 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fs"
           )
   | 4 -> ( 
-# 43 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fsl"
+# 45 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fsl"
                                  RP  
-# 125 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fs"
+# 127 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fs"
           )
   | 5 -> ( 
-# 44 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fsl"
+# 46 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fsl"
                                  LSP 
-# 130 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fs"
+# 132 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fs"
           )
   | 6 -> ( 
-# 45 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fsl"
+# 47 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fsl"
                                  RSP 
-# 135 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fs"
+# 137 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fs"
           )
   | 7 -> ( 
-# 46 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fsl"
+# 48 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fsl"
                                  LCP 
-# 140 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fs"
+# 142 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fs"
           )
   | 8 -> ( 
-# 47 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fsl"
+# 49 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fsl"
                                  RCP 
-# 145 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fs"
+# 147 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fs"
           )
   | 9 -> ( 
-# 48 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fsl"
+# 50 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fsl"
                                  COMMA 
-# 150 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fs"
+# 152 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fs"
           )
   | 10 -> ( 
-# 49 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fsl"
+# 51 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fsl"
                                  SEMI  
-# 155 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fs"
+# 157 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fs"
           )
   | 11 -> ( 
-# 50 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fsl"
+# 52 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fsl"
                                  COLON 
-# 160 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fs"
+# 162 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fs"
           )
   | 12 -> ( 
-# 51 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fsl"
+# 53 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fsl"
                                  BAR 
-# 165 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fs"
+# 167 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fs"
           )
   | 13 -> ( 
-# 52 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fsl"
+# 54 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fsl"
                                  TO 
-# 170 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fs"
+# 172 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fs"
           )
   | 14 -> ( 
-# 53 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fsl"
+# 55 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fsl"
                                  ASG   
-# 175 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fs"
+# 177 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fs"
           )
   | 15 -> ( 
-# 54 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fsl"
+# 56 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fsl"
                                  NEG 
-# 180 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fs"
+# 182 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fs"
           )
   | 16 -> ( 
-# 55 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fsl"
+# 57 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fsl"
                                  AND 
-# 185 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fs"
+# 187 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fs"
           )
   | 17 -> ( 
-# 56 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fsl"
+# 58 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fsl"
                                  NEQ 
-# 190 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fs"
+# 192 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fs"
           )
   | 18 -> ( 
-# 57 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fsl"
+# 59 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fsl"
                                  LT 
-# 195 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fs"
+# 197 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fs"
           )
   | 19 -> ( 
-# 58 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fsl"
+# 60 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fsl"
                                  GT 
-# 200 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fs"
+# 202 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fs"
           )
   | 20 -> ( 
-# 59 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fsl"
+# 61 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fsl"
                                  LE 
-# 205 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fs"
+# 207 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fs"
           )
   | 21 -> ( 
-# 60 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fsl"
+# 62 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fsl"
                                  TIMES 
-# 210 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fs"
+# 212 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fs"
           )
   | 22 -> ( 
-# 61 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fsl"
+# 63 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fsl"
                                  MINUS 
-# 215 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fs"
+# 217 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fs"
           )
   | 23 -> ( 
-# 62 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fsl"
+# 64 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fsl"
                                  EQ 
-# 220 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fs"
+# 222 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fs"
           )
   | 24 -> ( 
-# 63 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fsl"
+# 65 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fsl"
                                  PLUS 
-# 225 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fs"
+# 227 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fs"
           )
   | 25 -> ( 
-# 64 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fsl"
+# 66 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fsl"
                                  keyword(Encoding.UTF8.GetString(lexbuf.Lexeme)) 
-# 230 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fs"
+# 232 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fs"
           )
   | 26 -> ( 
-# 65 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fsl"
+# 67 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fsl"
                                  EOF 
-# 235 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fs"
+# 237 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fs"
           )
   | _ -> failwith "tokenize"
 
-# 67 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fsl"
-
-# 3000000 "C:\Users\mire\Documents\MRH data\Kurser\02257-16\GuardedCommandsVersion2\GuardedCommands\GuardedCommands\Lexer.fs"
+# 3000000 "C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands\Lexer.fs"

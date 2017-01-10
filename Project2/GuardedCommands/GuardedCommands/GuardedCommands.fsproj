@@ -11,6 +11,8 @@
     <AssemblyName>GuardedCommands</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <Name>GuardedCommands</Name>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -48,8 +50,9 @@
   </Choose>
   <Import Project="$(FSharpTargetsPath)" Condition="Exists('$(FSharpTargetsPath)')" />
   <PropertyGroup>
-    <PreBuildEvent>fslex "$(ProjectDir)Lexer.fsl"
-fsyacc -v  --module Parser "$(ProjectDir)Parser.fsy"</PreBuildEvent>
+    <PreBuildEvent>"C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\packages\FsLexYacc.7.0.3\build\fslex" "$(ProjectDir)Lexer.fsl"
+"C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\packages\FsLexYacc.7.0.3\build\fsyacc" --module Parser "$(ProjectDir)Parser.fsy"
+</PreBuildEvent>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AST.fs" />
@@ -86,13 +89,19 @@ fsyacc -v  --module Parser "$(ProjectDir)Parser.fsy"</PreBuildEvent>
     <None Include="factImpPTyp.gc" />
     <None Include="QuickSortV2.gc" />
     <None Include="par2.gc" />
+    <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">
-      <HintPath>bin\Debug\FSharp.Core.dll</HintPath>
+      <HintPath>..\packages\FSharp.Core.3.1.2.5\lib\net40\FSharp.Core.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="FSharp.PowerPack">
       <HintPath>bin\Debug\FSharp.PowerPack.dll</HintPath>
+    </Reference>
+    <Reference Include="FsLexYacc.Runtime">
+      <HintPath>..\packages\FsLexYacc.Runtime.7.0.3\lib\portable-net45+netcore45+wpa81+wp8+MonoAndroid10+MonoTouch10\FsLexYacc.Runtime.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Machine">
       <HintPath>bin\Debug\Machine.dll</HintPath>
@@ -105,6 +114,13 @@ fsyacc -v  --module Parser "$(ProjectDir)Parser.fsy"</PreBuildEvent>
       <HintPath>bin\Debug\virtualMachine.dll</HintPath>
     </Reference>
   </ItemGroup>
+  <Import Project="..\packages\FsLexYacc.7.0.3\build\FsLexYacc.targets" Condition="Exists('..\packages\FsLexYacc.7.0.3\build\FsLexYacc.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\FsLexYacc.7.0.3\build\FsLexYacc.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\FsLexYacc.7.0.3\build\FsLexYacc.targets'))" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

@@ -18,6 +18,8 @@ let keyword s =
     | "fi"        -> FI 
     | "do"        -> DO
     | "od"        -> OD     
+    | "function"  -> FUNCTION
+    | "return"    -> RETURN
     | "true"      -> BOOL(true) 
     | "false"     -> BOOL(false)
     | _           -> NAME s  
@@ -63,4 +65,3 @@ rule tokenize =
   | "+"         { PLUS }   
   | identifier  { keyword(Encoding.UTF8.GetString(lexbuf.Lexeme)) }
   | eof         { EOF }
-

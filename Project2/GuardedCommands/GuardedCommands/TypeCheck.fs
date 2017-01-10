@@ -19,6 +19,7 @@ module TypeCheck =
 
          | Apply(f,[e1;e2]) when List.exists (fun x ->  x=f) ["+";"*";"-"; "="; "&&"]        
                             -> tcDyadic gtenv ltenv f e1 e2   
+         | Apply(f,es) when Map.containsKey f gtenv -> tcNaryFunction gtenv ltenv f es
 
          | _                -> failwith "tcE: not supported yet"
 
@@ -64,16 +65,31 @@ module TypeCheck =
                          | Alt gc  -> tcGC gtenv ltenv gc
                          | Do (GC []) -> ()
                          | Do  gc  -> tcGC gtenv ltenv gc
+
+                         | Return expopt -> if (Map.exists (fun s typ -> match typ with
+                                                                          | FTyp (_,topt) when topt.IsNone -> expopt.IsNone
+                                                                          | FTyp (_,topt) -> tcE gtenv ltenv expopt.Value = topt.Value
+                                                                          | _ -> false ) ltenv) then ()
+                                            else failwith "No function to return from"
                                      
                          | _              -> failwith "tcS: this statement is not supported yet"
 
-   and tcGDec gtenv = function  
+   and tcGDec gtenv ltenv = function  
                       | VarDec(t,s)               -> Map.add s t gtenv
-                      | FunDec(topt,f, decs, stm) -> failwith "type check: function/procedure declarations not yet supported"
+                      | FunDec(topt,f, decs, stm) -> let typeList = decsToTypes decs []
+                                                     ignore(tcS gtenv (Map.add f (FTyp (typeList, topt)) ltenv)  stm)
+                                                     Map.add f (FTyp (typeList, topt)) gtenv
+                                                     //TODO Allow recursive definitions
 
-   and tcGDecs gtenv = function
-                       | dec::decs -> tcGDecs (tcGDec gtenv dec) decs
+   and tcGDecs gtenv ltenv = function
+                       | dec::decs -> tcGDecs (tcGDec gtenv ltenv dec) ltenv decs
                        | _         -> gtenv
+
+   and decsToTypes decs seen = match decs with
+                               | [] -> []
+                               | VarDec(t,s)::decs' when List.exists (fun v -> v=t) seen -> failwith "Two params were equal"
+                               | VarDec(t,s)::decs' -> t::(decsToTypes decs' (t::seen))
+                               | FunDec(topt,f,decs,stm)::_ -> failwith "Functions as parameters not supported"
 
 
 /// tcGS gtenv ltenv gc checks the well-typeness of a guarded command on the basis of type environments gtenv and ltenv
@@ -90,7 +106,5 @@ module TypeCheck =
        | GC []               ->  failwith "illtyped guarded command" 
 
 /// tcP prog checks the well-typeness of a program prog
-   and tcP(P(decs, stms)) = let gtenv = tcGDecs Map.empty decs
+   and tcP(P(decs, stms)) = let gtenv = tcGDecs Map.empty Map.empty decs
                             List.iter (tcS gtenv Map.empty) stms
-
-  
