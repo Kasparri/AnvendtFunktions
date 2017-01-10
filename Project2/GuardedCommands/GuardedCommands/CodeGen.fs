@@ -23,6 +23,9 @@ module CodeGeneration =
    type ParamDecs = (Typ * string) list
    type funEnv = Map<string, label * Typ option * ParamDecs>
 
+
+
+
 /// CE vEnv fEnv e gives the code for an expression e on the basis of a variable and a function environment
    let rec CE vEnv fEnv = 
        function
@@ -47,6 +50,8 @@ module CodeGeneration =
                                           | _    -> failwith "CE: this case is not possible"
                                 CE vEnv fEnv e1 @ CE vEnv fEnv e2 @ ins 
 
+       | Apply(f, es) -> callfun f es vEnv fEnv
+
        | _            -> failwith "CE: not supported yet"
        
 
@@ -56,6 +61,18 @@ module CodeGeneration =
                                                    | (LocVar addr,_) -> failwith "CA: Local variables not supported yet"
                                | AIndex(acc, e) -> failwith "CA: array indexing not supported yet" 
                                | ADeref e       -> failwith "CA: pointer dereferencing not supported yet"
+
+
+   and callfun f es vEnv fEnv : instr list =
+    let (labf, tyOpt, paramdecs) = Map.find f fEnv
+    let argc = List.length es
+    if argc = List.length paramdecs then
+      CEs vEnv fEnv es @ [CALL(argc, labf)]
+    else
+      failwith "parameter/argument mismatch"
+
+
+   and CEs vEnv fEnv es = List.collect (CE vEnv fEnv) es 
 
   
 (* Bind declared variable in env and generate code to allocate it: *)   
