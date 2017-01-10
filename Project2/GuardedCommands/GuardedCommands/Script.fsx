@@ -34,7 +34,7 @@ System.IO.Directory.SetCurrentDirectory @"C:\Users\Mads_\OneDrive\Documents\Visu
 
 // The Ex0.gc example:
 
-let ex0Tree = parseFromFile "factRec.gc";;
+let ex0Tree = parseFromFile "Ex7.gc";;
 
 let _ = tcP ex0Tree;;
 

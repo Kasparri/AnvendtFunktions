@@ -23,7 +23,11 @@ module CodeGeneration =
    type ParamDecs = (Typ * string) list
    type funEnv = Map<string, label * Typ option * ParamDecs>
 
-
+      (* Adapted from MicroC *)
+   let bindParam (env, fdepth) (VarDec(typ, x))  : varEnv = 
+       (Map.add x (LocVar fdepth, typ) env , fdepth+1)
+   let bindParams (paras:Dec list) ((env, fdepth) : varEnv) : varEnv = 
+       List.fold bindParam (env, fdepth) paras;
 
 
 /// CE vEnv fEnv e gives the code for an expression e on the basis of a variable and a function environment
@@ -62,7 +66,7 @@ module CodeGeneration =
                                | AIndex(acc, e) -> failwith "CA: array indexing not supported yet" 
                                | ADeref e       -> failwith "CA: pointer dereferencing not supported yet"
 
-
+   (* Adapted from MicroC *)
    and callfun f es vEnv fEnv : instr list =
     let (labf, tyOpt, paramdecs) = Map.find f fEnv
     let argc = List.length es
@@ -95,6 +99,8 @@ module CodeGeneration =
        | Ass(acc,e)       -> CA vEnv fEnv acc @ CE vEnv fEnv e @ [STI; INCSP -1]
 
        | Block([],stms)   -> CSs vEnv fEnv stms
+       | Block(decs,stms) -> List.iter (fun (VarDec(t,s)) -> ignore(allocate LocVar (t,s) vEnv)) decs
+                             CSs vEnv fEnv stms
 
        | Alt gc -> let labend = newLabel()
                    let labnext = newLabel()
@@ -141,16 +147,10 @@ module CodeGeneration =
              | VarDec (typ, var) -> let (vEnv1, code1) = allocate GloVar (typ, var) vEnv
                                     let (vEnv2, fEnv2, code2) = addv decr vEnv1 fEnv
                                     (vEnv2, fEnv2, code1 @ code2)
-             | FunDec (tyOpt, f, xs, body) -> addv decr vEnv (Map.add f (newLabel(), tyOpt, xs) fEnv)
+             | FunDec (tyOpt, f, xs, body) -> addv decr vEnv (Map.add f (newLabel(), tyOpt, xs) fEnv) (* Adapted from MicroC *)
        addv decs (Map.empty, 0) Map.empty
 
 
-   
-   let bindParam (env, fdepth) (VarDec(typ, x))  : varEnv = 
-       (Map.add x (LocVar fdepth, typ) env , fdepth+1)
-
-   let bindParams (paras:Dec list) ((env, fdepth) : varEnv) : varEnv = 
-       List.fold bindParam (env, fdepth) paras;
 
 
 
@@ -159,7 +159,7 @@ module CodeGeneration =
        let _ = resetLabels ()
        let ((gvM,_) as gvEnv, fEnv, initCode) = makeGlobalEnvs decs
 
-
+       (* Adapted from MicroC *)
        let compilefun (tyOpt, f, xs, stm) =
            let (labf,_,paras) = Map.find f fEnv
            let (envf, fdepthf) = bindParams paras (gvM, 0)
@@ -175,6 +175,3 @@ module CodeGeneration =
        initCode @ CSs gvEnv fEnv stms 
        @ [STOP]
        @ List.concat functions
-
-
-

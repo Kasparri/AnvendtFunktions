@@ -44,7 +44,7 @@ module TypeCheck =
                                                                                                     | Some t -> t 
                                                                                                    
                                          | Some (FTyp (typs,topt)) -> failwith "Wrong number of parameters"
-                                         | _ -> failwith "WhAt?"
+                                         | _ -> failwith "Unexpected function, expected a function"
  
    and tcNaryProcedure gtenv ltenv f es = failwith "type check: procedures not supported yet"
       
@@ -72,11 +72,13 @@ module TypeCheck =
 
                          | Block([],stms) -> List.iter (tcS gtenv ltenv) stms
 
+                         | Block(decs,stms) -> List.iter (tcS gtenv (tcLDecs ltenv decs)) stms
+
                          | Alt gc  -> tcGC gtenv ltenv gc
                          | Do (GC []) -> ()
                          | Do  gc  -> tcGC gtenv ltenv gc
 
-                         | Return expopt -> if (Map.exists (fun s typ -> match typ with
+                         | Return expopt -> if (Map.exists (fun _ typ -> match typ with
                                                                           | FTyp (_,topt) when topt.IsNone -> expopt.IsNone
                                                                           | FTyp (_,topt) -> tcE gtenv ltenv expopt.Value = topt.Value
                                                                           | _ -> false ) ltenv) then ()
@@ -90,11 +92,18 @@ module TypeCheck =
                                                      let newGtenv = tcGDecs (Map.add f (FTyp (typeList, topt)) gtenv) ltenv decs
                                                      ignore(tcS newGtenv (Map.add f (FTyp (typeList, topt)) ltenv)  stm)
                                                      newGtenv
-                                                     //TODO Allow recursive declarations
 
    and tcGDecs gtenv ltenv = function
                        | dec::decs -> tcGDecs (tcGDec gtenv ltenv dec) ltenv decs
                        | _         -> gtenv
+
+   and tcLDec ltenv = function  
+                      | VarDec(t,s)               -> Map.add s t ltenv
+                      | _ -> failwith "Local function declarations are not allowed"
+
+   and tcLDecs ltenv = function
+                       | dec::decs -> tcLDecs (tcLDec ltenv dec) decs
+                       | _         -> ltenv
 
    and decsToTypes decs seen = match decs with
                                | [] -> []
