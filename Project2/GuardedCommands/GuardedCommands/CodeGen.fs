@@ -99,6 +99,11 @@ module CodeGeneration =
                                             Label labnext] @ CS vEnv fEnv (Do (GC rest))
                    | _ -> []
                    @ [Label labend]
+
+       //| Return None -> [RET (snd vEnv - 1)] (* MicroC inspired *)
+
+       | Return (Some e) -> CE vEnv fEnv e @ [RET (snd vEnv)] (* MicroC inspired *)
+
        | _                -> failwith "CS: this statement is not supported yet"
 
 
@@ -119,14 +124,40 @@ module CodeGeneration =
              | VarDec (typ, var) -> let (vEnv1, code1) = allocate GloVar (typ, var) vEnv
                                     let (vEnv2, fEnv2, code2) = addv decr vEnv1 fEnv
                                     (vEnv2, fEnv2, code1 @ code2)
-             | FunDec (tyOpt, f, xs, body) -> failwith "makeGlobalEnvs: function/procedure declarations not supported yet"
+             | FunDec (tyOpt, f, xs, body) -> addv decr vEnv (Map.add f (newLabel(), tyOpt, xs) fEnv)
        addv decs (Map.empty, 0) Map.empty
+
+
+   
+   let bindParam (env, fdepth) (VarDec(typ, x))  : varEnv = 
+       (Map.add x (LocVar fdepth, typ) env , fdepth+1)
+
+   let bindParams (paras:Dec list) ((env, fdepth) : varEnv) : varEnv = 
+       List.fold bindParam (env, fdepth) paras;
+
+
 
 /// CP prog gives the code for a program prog
    let CP (P(decs,stms)) = 
        let _ = resetLabels ()
        let ((gvM,_) as gvEnv, fEnv, initCode) = makeGlobalEnvs decs
-       initCode @ CSs gvEnv fEnv stms @ [STOP]     
+
+
+       let compilefun (tyOpt, f, xs, stm) =
+           let (labf,_,paras) = Map.find f fEnv
+           let (envf, fdepthf) = bindParams paras (gvM, 0)
+           let code = CS (envf,fdepthf) fEnv stm
+           [Label labf] @ code @ [RET (List.length paras-1)]
+       let functions =
+           List.choose (function
+                           | FunDec (rTy, name, argTys, stm)
+                                   -> Some (compilefun (rTy, name, argTys, stm))
+                           | VarDec _ -> None)
+                        decs
+        
+       initCode @ CSs gvEnv fEnv stms 
+       @ [STOP]
+       @ List.concat functions
 
 
 
