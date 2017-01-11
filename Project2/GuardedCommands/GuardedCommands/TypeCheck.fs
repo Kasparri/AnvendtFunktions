@@ -107,7 +107,7 @@ module TypeCheck =
 
    and tcGDec gtenv ltenv = function  
                       | VarDec(t,s)               -> match t with
-                                                     | ATyp (atyp, topt) -> match atyp with
+                                                     | ATyp (atyp,_) -> match atyp with
                                                                             | ITyp | BTyp ->  Map.add s t gtenv
                                                                             | _ -> failwith "Cant declare arrays of anything but ints and bools"
                                                      | _ -> Map.add s t gtenv
