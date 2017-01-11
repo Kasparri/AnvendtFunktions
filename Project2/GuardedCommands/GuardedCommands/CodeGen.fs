@@ -91,6 +91,7 @@ module CodeGeneration =
       let code = [INCSP 1]
       (newEnv, code)
 
+      (*
    let makeLocalEnvs decs vEnv fEnv =
        let rec addv decs vEnv fEnv =
            match decs with
@@ -101,11 +102,18 @@ module CodeGeneration =
                                       let (vEnv2, fEnv2, code2) = addv decr vEnv1 fEnv
                                       (vEnv2, fEnv2, code1 @ code2)
                | FunDec _ -> failwith "Local function declarations not allowed"
-       addv decs vEnv fEnv
+       addv decs vEnv fEnv *)
 
+   let rec loop decs vEnv =
+       match decs with 
+       | []     -> (snd vEnv, [])
+       | VarDec (typ,x)::decs' -> 
+            let (vEnv1, code1) = allocate LocVar (typ, x) vEnv
+            let (fdepthr, coder) = loop decs' vEnv1 
+            (fdepthr, code1 @ coder)
+       | _ -> failwith "gg"
 
-
-                         
+                       
 /// CS vEnv fEnv s gives the code for a statement s on the basis of a variable and a function environment                          
    let rec CS vEnv fEnv = function
        | PrintLn e        -> CE vEnv fEnv e @ [PRINTI; INCSP -1] 
@@ -113,8 +121,9 @@ module CodeGeneration =
        | Ass(acc,e)       -> CA vEnv fEnv acc @ CE vEnv fEnv e @ [STI; INCSP -1]
 
        //| Block([],stms)   -> CSs vEnv fEnv stms
-       | Block(decs,stms) -> let ((lvM,_) as lvEnv, fEnv, initCode) = makeLocalEnvs decs vEnv fEnv
-                             initCode @ CSs vEnv fEnv stms
+       | Block(decs,stms) -> //let ((lvM,_) as lvEnv, fEnv, initCode) = makeLocalEnvs decs vEnv fEnv
+                             let (fdepthend, code) = loop decs vEnv
+                             code @ CSs vEnv fEnv stms @ [INCSP(snd vEnv - fdepthend)]
 
        | Alt gc -> let labend = newLabel()
                    let labnext = newLabel()
