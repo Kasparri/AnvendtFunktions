@@ -38,7 +38,9 @@ module TypeCheck =
                                          | None -> failwith "Function not declared"
                                          | Some (FTyp (typs,topt)) when es.Length = typs.Length -> for i in 0..(typs.Length-1) do
                                                                                                         if (typs.[i] <> tcE gtenv ltenv es.[i]) 
-                                                                                                        then failwith "Parameters are of the wrong types"
+                                                                                                        then Console.WriteLine typs.[i]
+                                                                                                             Console.WriteLine (tcE gtenv ltenv es.[i])
+                                                                                                             failwith "Parameters are of the wrong types"
                                                                                                    match topt with
                                                                                                     | None -> failwith "Procedures are not functions"
                                                                                                     | Some t -> t 
@@ -58,7 +60,11 @@ module TypeCheck =
                                          | None   -> failwith ("no declaration for : " + x)
                                          | Some t -> t
                              | Some t -> t            
-         | AIndex(acc, e) -> failwith "tcA: array indexing not supported yes"
+         | AIndex(acc, e) -> match tcA gtenv ltenv acc with
+                             | ATyp(atyp,topt) -> if (ITyp = tcE gtenv ltenv e) then atyp
+                                                  else failwith "Index was not an integer"
+                             | _ -> failwith"Variable was not an array"
+                             
          | ADeref e       -> failwith "tcA: pointer dereferencing not supported yes"
  
 
@@ -87,7 +93,11 @@ module TypeCheck =
                          | _              -> failwith "tcS: this statement is not supported yet"
 
    and tcGDec gtenv ltenv = function  
-                      | VarDec(t,s)               -> Map.add s t gtenv
+                      | VarDec(t,s)               -> match t with
+                                                     | ATyp (atyp, topt) -> match atyp with
+                                                                            | ITyp | BTyp ->  Map.add s t gtenv
+                                                                            | _ -> failwith "Cant declare arrays of anything but ints and bools"
+                                                     | _ -> Map.add s t gtenv
                       | FunDec(topt,f, decs, stm) -> let typeList = decsToTypes decs []
                                                      let newGtenv = tcGDecs (Map.add f (FTyp (typeList, topt)) gtenv) ltenv decs
                                                      ignore(tcS newGtenv (Map.add f (FTyp (typeList, topt)) ltenv)  stm)
