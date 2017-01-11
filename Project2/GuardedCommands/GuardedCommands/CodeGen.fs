@@ -121,7 +121,14 @@ module CodeGeneration =
        | Ass(acc,e)       -> CA vEnv fEnv acc @ CE vEnv fEnv e @ [STI; INCSP -1]
 
        //| Block([],stms)   -> CSs vEnv fEnv stms
-       | Block(decs,stms) -> //let ((lvM,_) as lvEnv, fEnv, initCode) = makeLocalEnvs decs vEnv fEnv
+       | Block(decs,stms) -> let rec loop decs vEnv =
+                                 match decs with 
+                                 | []     -> (snd vEnv, [])
+                                 | VarDec (typ,x)::decs' -> 
+                                      let (vEnv1, code1) = allocate LocVar (typ, x) vEnv
+                                      let (fdepthr, coder) = loop decs' vEnv1 
+                                      (fdepthr, code1 @ coder)
+                                 | _ -> failwith "gg"
                              let (fdepthend, code) = loop decs vEnv
                              code @ CSs vEnv fEnv stms @ [INCSP(snd vEnv - fdepthend)]
 
