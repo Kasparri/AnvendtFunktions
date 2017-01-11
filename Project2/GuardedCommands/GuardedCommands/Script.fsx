@@ -29,8 +29,8 @@ open VirtualMachine
 
 // You must revise this path
 //System.IO.Directory.SetCurrentDirectory @"../GuardedCommands";;
-
-System.IO.Directory.SetCurrentDirectory @"C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands";;
+System.IO.Directory.SetCurrentDirectory @" ../Users/Kasper/Workspace/AnvendtFunktions/Project2/GuardedCommands/GuardedCommands";;
+//System.IO.Directory.SetCurrentDirectory @"C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands";;
 
 // The Ex0.gc example:
 

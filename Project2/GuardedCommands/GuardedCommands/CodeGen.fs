@@ -91,16 +91,30 @@ module CodeGeneration =
       let code = [INCSP 1]
       (newEnv, code)
 
-                      
+   let makeLocalEnvs decs vEnv fEnv =
+       let rec addv decs vEnv fEnv =
+           match decs with
+           | [] -> (vEnv, fEnv, [] )
+           | dec::decr ->
+               match dec with
+               | VarDec (typ, var) -> let (vEnv1, code1) = allocate LocVar (typ, var) vEnv
+                                      let (vEnv2, fEnv2, code2) = addv decr vEnv1 fEnv
+                                      (vEnv2, fEnv2, code1 @ code2)
+               | FunDec _ -> failwith "Local function declarations not allowed"
+       addv decs vEnv fEnv
+
+
+
+                         
 /// CS vEnv fEnv s gives the code for a statement s on the basis of a variable and a function environment                          
    let rec CS vEnv fEnv = function
        | PrintLn e        -> CE vEnv fEnv e @ [PRINTI; INCSP -1] 
 
        | Ass(acc,e)       -> CA vEnv fEnv acc @ CE vEnv fEnv e @ [STI; INCSP -1]
 
-       | Block([],stms)   -> CSs vEnv fEnv stms
-       | Block(decs,stms) -> List.iter (fun (VarDec(t,s)) -> ignore(allocate LocVar (t,s) vEnv)) decs
-                             CSs vEnv fEnv stms
+       //| Block([],stms)   -> CSs vEnv fEnv stms
+       | Block(decs,stms) -> let ((lvM,_) as lvEnv, fEnv, initCode) = makeLocalEnvs decs vEnv fEnv
+                             initCode @ CSs vEnv fEnv stms
 
        | Alt gc -> let labend = newLabel()
                    let labnext = newLabel()
@@ -137,6 +151,9 @@ module CodeGeneration =
 (* ------------------------------------------------------------------- *)
 
 (* Build environments for global variables and functions *)
+
+
+
 
    let makeGlobalEnvs decs = 
        let rec addv decs vEnv fEnv = 
