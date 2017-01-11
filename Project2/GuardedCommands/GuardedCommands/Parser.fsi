@@ -30,6 +30,7 @@ type token =
   | END
   | FUNCTION
   | RETURN
+  | PROCEDURE
   | LP
   | LCP
   | LSP
@@ -72,6 +73,7 @@ type tokenId =
     | TOKEN_END
     | TOKEN_FUNCTION
     | TOKEN_RETURN
+    | TOKEN_PROCEDURE
     | TOKEN_LP
     | TOKEN_LCP
     | TOKEN_LSP

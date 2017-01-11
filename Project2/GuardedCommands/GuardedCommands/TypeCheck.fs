@@ -17,7 +17,7 @@ module TypeCheck =
          | Apply(f,[e]) when List.exists (fun x ->  x=f) ["-"; "!"]  
                             -> tcMonadic gtenv ltenv f e        
 
-         | Apply(f,[e1;e2]) when List.exists (fun x ->  x=f) ["+";"*";"-"; "="; "&&"]        
+         | Apply(f,[e1;e2]) when List.exists (fun x ->  x=f) ["+";"*";"-"; "="; "&&"; "<"; ">";">=";"<="]        
                             -> tcDyadic gtenv ltenv f e1 e2   
          | Apply(f,es) -> tcNaryFunction gtenv ltenv f es
 
@@ -30,26 +30,37 @@ module TypeCheck =
    
    and tcDyadic gtenv ltenv f e1 e2 = match (f, tcE gtenv ltenv e1, tcE gtenv ltenv e2) with
                                       | (o, ITyp, ITyp) when List.exists (fun x ->  x=o) ["+";"*";"-"]  -> ITyp
-                                      | (o, ITyp, ITyp) when List.exists (fun x ->  x=o) ["="] -> BTyp
+                                      | (o, ITyp, ITyp) when List.exists (fun x ->  x=o) ["=";"<";">";">=";"<="] -> BTyp
                                       | (o, BTyp, BTyp) when List.exists (fun x ->  x=o) ["&&";"="]     -> BTyp 
                                       | _                      -> failwith("illegal/illtyped dyadic expression: " + f)
 
    and tcNaryFunction gtenv ltenv f es = match Map.tryFind f gtenv with
                                          | None -> failwith "Function not declared"
-                                         | Some (FTyp (typs,topt)) when es.Length = typs.Length -> for i in 0..(typs.Length-1) do
-                                                                                                        if (typs.[i] <> tcE gtenv ltenv es.[i]) 
-                                                                                                        then Console.WriteLine typs.[i]
-                                                                                                             Console.WriteLine (tcE gtenv ltenv es.[i])
-                                                                                                             failwith "Parameters are of the wrong types"
-                                                                                                   match topt with
-                                                                                                    | None -> failwith "Procedures are not functions"
-                                                                                                    | Some t -> t 
+                                         | Some (FTyp (typs,topt)) when es.Length = typs.Length -> 
+                                                                    checkParams gtenv ltenv es typs                  
+                                                                    match topt with
+                                                                    | None -> failwith "Procedures are not functions"
+                                                                    | Some t -> t 
                                                                                                    
                                          | Some (FTyp (typs,topt)) -> failwith "Wrong number of parameters"
                                          | _ -> failwith "Unexpected function, expected a function"
  
-   and tcNaryProcedure gtenv ltenv f es = failwith "type check: procedures not supported yet"
-      
+   and tcNaryProcedure gtenv ltenv f (es: Exp list) = match Map.tryFind f gtenv with
+                                                       | None -> failwith "Procedure not declared"
+                                                       | Some (FTyp(typs,topt)) when es.Length = typs.Length -> 
+                                                                                checkParams gtenv ltenv es typs                
+                                                                                match topt with
+                                                                                | None -> ()
+                                                                                | Some (_) -> failwith "Functions are not procedures" 
+                                                       | Some (FTyp (typs,topt)) -> failwith "Wrong number of parameters"
+                                                       | _ -> failwith "Unexpected function, expected a function"
+   and checkParams gtenv ltenv es typs = for i in 0..(typs.Length-1) do
+                                            match typs.[i] with
+                                            | ATyp(atyp,_) -> match tcE gtenv ltenv es.[i] with
+                                                              | ATyp(atyp',_) -> if(atyp <> atyp') then failwith "Parameters are of the wrong types"
+                                                              | _ -> failwith"Parameters are of the wrong types"                         
+                                            | _ ->  if (typs.[i] <> tcE gtenv ltenv es.[i]) 
+                                                    then failwith "Parameters are of the wrong types"
 
 /// tcA gtenv ltenv e gives the type for access acc on the basis of type environments gtenv and ltenv
 /// for global and local variables 
@@ -89,6 +100,8 @@ module TypeCheck =
                                                                           | FTyp (_,topt) -> tcE gtenv ltenv expopt.Value = topt.Value
                                                                           | _ -> false ) ltenv) then ()
                                             else failwith "No function to return from"
+
+                         | Call (name, es) -> tcNaryProcedure gtenv ltenv name es
                                      
                          | _              -> failwith "tcS: this statement is not supported yet"
 
@@ -98,6 +111,13 @@ module TypeCheck =
                                                                             | ITyp | BTyp ->  Map.add s t gtenv
                                                                             | _ -> failwith "Cant declare arrays of anything but ints and bools"
                                                      | _ -> Map.add s t gtenv
+
+                      | FunDec(topt,f,decs,stm) when topt.IsNone ->
+                                                let typeList = decsToTypes decs []
+                                                let newGtenv = tcGDecs (Map.add f (FTyp (typeList, topt)) gtenv) ltenv decs
+                                                ignore(tcS newGtenv ltenv stm)
+                                                newGtenv
+
                       | FunDec(topt,f, decs, stm) -> let typeList = decsToTypes decs []
                                                      let newGtenv = tcGDecs (Map.add f (FTyp (typeList, topt)) gtenv) ltenv decs
                                                      ignore(tcS newGtenv (Map.add f (FTyp (typeList, topt)) ltenv)  stm)

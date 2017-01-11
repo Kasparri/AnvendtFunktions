@@ -19,6 +19,7 @@ let keyword s =
     | "do"        -> DO
     | "od"        -> OD     
     | "function"  -> FUNCTION
+    | "procedure" -> PROCEDURE
     | "return"    -> RETURN
     | "true"      -> BOOL(true) 
     | "false"     -> BOOL(false)
