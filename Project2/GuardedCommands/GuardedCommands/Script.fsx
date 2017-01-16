@@ -15,13 +15,17 @@
 #load "CodeGenOpt.fs"
 #load "Util.fs"
 #load "FunctionalPearls.fs"
+//#load "DumbFunctionalPearls.fs"
 #load "TranslateTree.fs"
+
+#time "on"
 
 
 
 open GuardedCommands.Util
 open GuardedCommands.Frontend.TypeCheck
 open GuardedCommands.Frontend.FunctionalPearls
+//open GuardedCommands.Frontend.DumbFunctionalPearls
 open GuardedCommands.Frontend.TranslateTree
 open GuardedCommands.Frontend.AST
 open GuardedCommands.Backend.CodeGeneration
@@ -38,8 +42,16 @@ open VirtualMachine
 System.IO.Directory.SetCurrentDirectory @"C:\Users\Mads_\OneDrive\Documents\Visual Studio 2015\Projects\AnvendtFunktions\Project2\GuardedCommands\GuardedCommands";;
 
 // The Ex0.gc example:
+let rec randomTree = function
+        | 0 -> Node("Leaf",[])
+        | d -> Node("A",[randomTree(d-1);randomTree(d-1)])
 
-let ex0Tree = parseFromFile "QuickSortV1.gc";;
+
+let ex0Tree = parseFromFile "Ex2.gc";;
+
+
+
+
 
 let _ = tcP ex0Tree;;
 
@@ -51,7 +63,7 @@ let abc = treeFromProgram ex0Tree;;
 
 let def = design abc;;
 
-let _ = createFile (converttree def) "QuickSort";;
+let _ = createFile (converttree def) "EX2";;
 
 let _ = goTrace ex0Tree;;
 

@@ -5,7 +5,7 @@ namespace GuardedCommands.Frontend
 open System.IO
 open System.Diagnostics
 
-module FunctionalPearls = 
+module DumbFunctionalPearls = 
 
 
 /// 2. Representing trees
@@ -86,35 +86,35 @@ module FunctionalPearls =
                           if (x < minX) then minX <- x
                           if (y < minY) then minY <- y
 
-    let moveto x y = checkBounds (x*100.0) y
-                     String.concat " " [string (x*100.0);string y;"moveto"]
+    
+    let moveto x y = checkBounds x y
+                     (string (x*100.0)) + " " + (string y) + " moveto\n"
 
-    let lineto x y = checkBounds (x*100.0) y
-                     String.concat " " [string (x*100.0);string y;"lineto"]
+    let lineto x y = checkBounds x y
+                     (string (x*100.0)) + " " + (string y) + " lineto\n"
 
     let checkName n = if (String.length n) > 15 then n.[0..14] else n
 
-    let drawName px d n i = [moveto (px + i) (-d*80-10);
-                             String.concat "" ["(";(checkName n);") dup stringwidth pop 2 div neg 0 rmoveto show"]]
+    let drawName px d n i = moveto (px + i) (-d*80-10) +
+                            "(" + (checkName n) + ") dup stringwidth pop 2 div neg 0 rmoveto show\n"
 
-    let drawDown x ystart yend = [moveto x ystart;lineto x yend]
+    let drawDown x ystart yend = moveto x ystart + lineto x yend
 
-    let drawHorizontalBar xstart xend y = [moveto xstart y; lineto xend y]
+    let drawHorizontalBar xstart xend y = moveto xstart y + lineto xend y
 
     let extracti = function
                    | Node((_,i),_) -> i
 
-    let drawLayer x d kids = List.concat[drawDown x (-d*80 - 20) (-d*80 - 40);
-                                         drawHorizontalBar (extracti (List.head kids) + x) (extracti (List.last kids) + x) (-d*80 - 40);
-                                         (List.fold (fun r (Node ((_,i),_)) -> r @ (drawDown (i+x) (-d*80-40) (-d*80-80))) [] kids)]
+    let drawLayer x d kids = drawDown x (-d*80 - 20) (-d*80 - 40) +
+                             drawHorizontalBar (extracti (List.head kids) + x) (extracti (List.head (List.rev kids)) + x) (-d*80 - 40) +
+                             (List.fold (fun r (Node ((_,i),_)) -> r + (drawDown (i+x) (-d*80-40) (-d*80-80))) "" kids)
                                             
 
-
+    
     let rec converttree' px d = function
         | Node ((n, i),[]  )  -> drawName (px) d n i
-        | Node ((n, i),kids)  -> List.concat[drawName (px) d n i;
-                                             drawLayer (px+i) d kids;
-                                             List.fold (fun r k -> r @ converttree' (px+i) (d+1) k) [] kids]
+        | Node ((n, i),kids)  -> drawName (px) d n i + drawLayer (px+i) d kids +
+                                 List.fold (fun r k -> r + converttree' (px+i) (d+1) k) "" kids
 
 
     let converttree tree = 
@@ -122,16 +122,15 @@ module FunctionalPearls =
         let width = maxX-minX+100.0
 
         let height = minY - 60
-        let start = ["%!";
-                     "<</PageSize["+ string width + " " + string (-height)+"]/ImagingBBox null>> setpagedevice";
-                     "1 1 scale";
-                     string ((width/2.0)-((minX+maxX)/2.0)) + " " + string (-height-10)+" translate";
-                     "newpath";
-                     "/Times-Roman findfont 10 scalefont setfont"]
+        let start = "%!"+
+                     "<</PageSize["+ string width + " " + string (-height)+"]/ImagingBBox null>> setpagedevice"+
+                     "1 1 scale"+
+                     string ((width/2.0)-((minX+maxX)/2.0)) + " " + string (-height-10)+" translate"+
+                     "newpath"+
+                     "/Times-Roman findfont 10 scalefont setfont"
 
-        let finish = ["stroke";"showpage"]
-        String.concat "\n" (List.concat[start;convertedTree;finish])
-
+        let finish = "stroke\n" + "showpage\n"
+        start + convertedTree + finish
 
 
 

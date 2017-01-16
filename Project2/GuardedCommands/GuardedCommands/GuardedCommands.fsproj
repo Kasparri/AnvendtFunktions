@@ -59,8 +59,8 @@
     <None Include="check.gc" />
     <None Include="Parser.fsy" />
     <None Include="Lexer.fsl" />
+    <Compile Include="DumbFunctionalPearls.fs" />
     <Compile Include="TranslateTree.fs" />
-    <None Include="FunctionalPearls.fs" />
     <Compile Include="Parser.fs" />
     <Compile Include="Lexer.fs" />
     <Compile Include="TypeCheck.fs" />
@@ -93,6 +93,7 @@
     <None Include="par2.gc" />
     <Content Include="packages.config" />
     <None Include="QuickSortV1.gc" />
+    <None Include="FunctionalPearls.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">
