@@ -123,7 +123,7 @@ module FunctionalPearls =
         let width = maxX-minX+100.0
         let height = minY + 60
         let start = ["%!";
-                     "<</PageSize["+ string width + " " + string height+"]/ImagingBBox null>> setpagedevice";
+                     "<</PageSize["+ string width + " " + string (-height)+"]/ImagingBBox null>> setpagedevice";
                      "1 1 scale";
                      string (width/2.0) + " " + string (minY-10)+" translate";
                      "newpath";
