@@ -78,9 +78,19 @@ module FunctionalPearls =
 
     /// Convert Trees to strings of PostScript format
 
-    let moveto x y = String.concat " " [string (x*100.0);string y;"moveto"]
+    let mutable maxX = 0.0
+    let mutable minX = 0.0
+    let mutable minY = 0
 
-    let lineto x y = String.concat " " [string (x*100.0);string y;"lineto"]
+    let checkBounds x y = if (x > maxX) then maxX <- x
+                          if (x < minX) then minX <- x
+                          if (y < minY) then minY <- y
+
+    let moveto x y = checkBounds (x*100.0) y
+                     String.concat " " [string (x*100.0);string y;"moveto"]
+
+    let lineto x y = checkBounds (x*100.0) y
+                     String.concat " " [string (x*100.0);string y;"lineto"]
 
     let checkName n = if (String.length n) > 15 then n.[0..14] else n
 
@@ -109,15 +119,18 @@ module FunctionalPearls =
 
 
     let converttree tree = 
+        let convertedTree = converttree' 0.0 0 tree
+        let width = maxX-minX+100.0
+        let height = minY + 60
         let start = ["%!";
-                     "<</PageSize[1400 1000]/ImagingBBox null>> setpagedevice";
+                     "<</PageSize["+ string width + " " + string height+"]/ImagingBBox null>> setpagedevice";
                      "1 1 scale";
-                     "700 999 translate";
+                     string (width/2.0) + " " + string (minY-10)+" translate";
                      "newpath";
                      "/Times-Roman findfont 10 scalefont setfont"]
 
         let finish = ["stroke";"showpage"]
-        String.concat "\n" (List.concat[start;(converttree' 0.0 0 tree);finish])
+        String.concat "\n" (List.concat[start;convertedTree;finish])
 
 
 
