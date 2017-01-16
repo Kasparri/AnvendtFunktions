@@ -130,6 +130,10 @@ let converttree tree =
     let finish = "stroke\n" + "showpage\n"
     start + convertedTree + finish
 
+let rec randomTree = function
+        | 0 -> Node("Leaf",[])
+        | d -> Node("A",[randomTree(d-1);randomTree(d-1)])
+
 
 
 /// Writing PostScript to a file
@@ -140,6 +144,21 @@ let createFile (data:string) fileName =
 
 
 /// Tests
+
+
+
+#time "on"
+let id = 20;;
+let _ = converttree (design (randomTree id));;
+
+
+
+
+
+
+
+
+
 //    let tree1 = Node("A", [Node("B",[Node("D",[])]);Node("C",[])] )
 //    let tree2 = Node("A",[])
 //

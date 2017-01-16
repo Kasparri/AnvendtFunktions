@@ -133,6 +133,24 @@ let createFile (data:string) fileName =
 
 
 /// Tests
+
+
+
+
+
+
+#time "on"
+let id = 20;;
+let _ = converttree (design (randomTree id));;
+
+
+
+
+
+
+
+
+
 //    let tree1 = Node("A", [Node("B",[Node("D",[])]);Node("C",[])] )
 //    let tree2 = Node("A",[])
 //
