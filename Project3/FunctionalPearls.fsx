@@ -6,6 +6,8 @@ open System.IO
 open System.Diagnostics
 
 
+
+
 /// 2. Representing trees
 type 'a Tree = Node of 'a * ('a Tree list)
 
@@ -50,7 +52,7 @@ let fitlistl (es:Extent list) =
 let fitlistr (es:Extent list) =
     let rec fitlistr' acc = function
     | []      -> []
-    | (e::es) -> let x = - fit(e,acc)
+    | (e::es) -> let x = - fit(acc,e)
                  x :: (fitlistr' (merge ( moveextent(e,x), acc ) ) es)
     List.rev (fitlistr' [] (List.rev es))
 
@@ -95,7 +97,7 @@ let extracti = function
 let drawLayer x d kids = List.concat[drawDown x (-d*80 - 20) (-d*80 - 40);
                                      drawHorizontalBar (extracti (List.head kids) + x) (extracti (List.last kids) + x) (-d*80 - 40);
                                      (List.fold (fun r (Node ((_,i),_)) -> r @ (drawDown (i+x) (-d*80-40) (-d*80-80))) [] kids)]
-                                            
+                                        
 
 
 let rec converttree' px d = function
@@ -118,6 +120,11 @@ let converttree tree =
     String.concat "\n" (List.concat[start;(converttree' 0.0 0 tree);finish])
 
 
+let rec randomTree = function
+        | 0 -> Node("Leaf",[])
+        | d -> Node("A",[randomTree(d-1);randomTree(d-1)])
+
+
 
 /// Writing PostScript to a file
 let createFile (data:string) fileName =
@@ -126,19 +133,19 @@ let createFile (data:string) fileName =
 
 
 /// Tests
-let tree1 = Node("A", [Node("B",[Node("D",[]);Node("E",[])]);Node("C",[Node("F",[]);Node("G",[])]);Node("H",[])] )
-let tree2 = Node("A",[])
-
-design tree1;;
-design tree2;;
-
-let postree1 = design tree1;;
-let postree2 = design tree2;;
-
-converttree postree1;;
-converttree postree2;;
-
-createFile (converttree postree1) "test123";;
+//    let tree1 = Node("A", [Node("B",[Node("D",[])]);Node("C",[])] )
+//    let tree2 = Node("A",[])
+//
+//    let _ = design tree1;;
+//    let _ = design tree2;;
+//
+//    let postree1 = design tree1;;
+//    let postree2 = design tree2;;
+//
+//    converttree postree1;;
+//    converttree postree2;;
+//
+//    createFile (converttree postree1) "test123";;
 
 
 
