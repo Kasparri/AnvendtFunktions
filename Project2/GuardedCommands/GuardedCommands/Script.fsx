@@ -39,7 +39,7 @@ System.IO.Directory.SetCurrentDirectory @"C:\Users\Mads_\OneDrive\Documents\Visu
 
 // The Ex0.gc example:
 
-let ex0Tree = parseFromFile "Ex1.gc";;
+let ex0Tree = parseFromFile "QuickSortV1.gc";;
 
 let _ = tcP ex0Tree;;
 
@@ -50,6 +50,8 @@ let _ = go ex0Tree;;
 let abc = treeFromProgram ex0Tree;;
 
 let def = design abc;;
+
+let _ = createFile (converttree def) "QuickSort";;
 
 let _ = goTrace ex0Tree;;
 
