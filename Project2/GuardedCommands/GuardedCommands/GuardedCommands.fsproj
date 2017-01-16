@@ -56,8 +56,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AST.fs" />
+    <None Include="check.gc" />
     <None Include="Parser.fsy" />
     <None Include="Lexer.fsl" />
+    <Compile Include="TranslateTree.fs" />
+    <None Include="FunctionalPearls.fs" />
     <Compile Include="Parser.fs" />
     <Compile Include="Lexer.fs" />
     <Compile Include="TypeCheck.fs" />
@@ -84,12 +87,12 @@
     <None Include="A3.gc" />
     <None Include="A4.gc" />
     <None Include="Swap.gc" />
-    <None Include="QuickSortV1.gc" />
     <None Include="par1.gc" />
     <None Include="factImpPTyp.gc" />
     <None Include="QuickSortV2.gc" />
     <None Include="par2.gc" />
     <Content Include="packages.config" />
+    <None Include="QuickSortV1.gc" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">

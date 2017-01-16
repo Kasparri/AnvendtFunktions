@@ -14,10 +14,15 @@
 #load "CodeGen.fs"
 #load "CodeGenOpt.fs"
 #load "Util.fs"
+#load "FunctionalPearls.fs"
+#load "TranslateTree.fs"
+
 
 
 open GuardedCommands.Util
 open GuardedCommands.Frontend.TypeCheck
+open GuardedCommands.Frontend.FunctionalPearls
+open GuardedCommands.Frontend.TranslateTree
 open GuardedCommands.Frontend.AST
 open GuardedCommands.Backend.CodeGeneration
 
@@ -34,13 +39,17 @@ System.IO.Directory.SetCurrentDirectory @"C:\Users\Mads_\OneDrive\Documents\Visu
 
 // The Ex0.gc example:
 
-let ex0Tree = parseFromFile "A4.gc";;
+let ex0Tree = parseFromFile "Ex1.gc";;
 
 let _ = tcP ex0Tree;;
 
 let ex0Code = CP ex0Tree;; 
 
 let _ = go ex0Tree;;
+
+let abc = treeFromProgram ex0Tree;;
+
+let def = design abc;;
 
 let _ = goTrace ex0Tree;;
 
@@ -69,15 +78,15 @@ let _ = exec "Ex1.gc";;
 let _ = exec "Ex2.gc";;
 
 // Test of programs covered by the fifth task using optimized compilation (Section 8.2):
-List.iter execOpt ["Ex1.gc"; "Ex2.gc"];;
+//List.iter execOpt ["Ex1.gc"; "Ex2.gc"];;
 
 // All programs relating to the basic version can be parsed:
 let pts = List.map parseFromFile ["Ex1.gc"; "Ex2.gc";"Ex3.gc"; "Ex4.gc"; "Ex5.gc"; "Ex6.gc"; "Skip.gc"];;
 
-// The parse tree for Ex3.gc
-List.nth pts 2;
+// The parse tree for Ex3.gc, changed to use List.item
+List.item 2 pts;
 
-(*
+
 // Test of programs covered by the first task (Section 3.7):
 List.iter exec ["Ex1.gc"; "Ex2.gc";"Ex3.gc"; "Ex4.gc"; "Ex5.gc"; "Ex6.gc"; "Skip.gc"];;
 
@@ -89,11 +98,10 @@ List.iter exec ["A0.gc"; "A1.gc"; "A2.gc"; "A3.gc"];;
 
 // Test of programs covered by the fifth task (Section 6.1):
 List.iter exec ["A4.gc"; "Swap.gc"; "QuickSortV1.gc"];;
-
+(*
 // Test of programs covered by the fifth task (Section 7.4):
 List.iter exec ["par1.gc"; "factImpPTyp.gc"; "QuickSortV2.gc"; "par2.gc"];;
 
 // Test of programs covered by the fifth task using optimized compilation (Section 8.2):
 List.iter execOpt ["par1.gc"; "factImpPTyp.gc"; "QuickSortV2.gc"; "par2.gc"];;
-
 *)

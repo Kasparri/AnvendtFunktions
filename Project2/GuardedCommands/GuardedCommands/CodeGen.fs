@@ -51,8 +51,8 @@ module CodeGeneration =
                                           | "*"  -> [MUL]
                                           | "-"  -> [SUB]
                                           | "="  -> [EQ] 
-                                          | "<" -> [LT]
-                                          | ">" -> [SWAP;LT]
+                                          | "<"  -> [LT]
+                                          | ">"  -> [SWAP;LT]
                                           | "<=" -> [SWAP;LT;NOT]
                                           | ">=" -> [LT; NOT]
                                           | _    -> failwith "CE: this case is not possible"
@@ -67,8 +67,9 @@ module CodeGeneration =
    and CA vEnv fEnv = function | AVar x         -> match Map.find x (fst vEnv) with
                                                    | (GloVar addr,_) -> [CSTI addr]
                                                    | (LocVar addr,_) -> [GETBP; CSTI addr; ADD]
-                               | AIndex(acc, e) -> CA vEnv fEnv acc 
-                                                   @ [LDI] @ CE vEnv fEnv e @ [ADD]
+                               | AIndex(acc, e) ->  CA vEnv fEnv acc @ [LDI] @ CE vEnv fEnv e  @ [ADD]
+                                                   
+                                                    
                                | ADeref e       -> failwith "CA: pointer dereferencing not supported yet"
 
    (* Adapted from MicroC *)
@@ -108,7 +109,7 @@ module CodeGeneration =
             let (vEnv1, code1) = allocate LocVar (typ, x) vEnv
             let (vEnv2, coder) = loop decs' vEnv1 
             (vEnv2, code1 @ coder)
-       | _ -> failwith "gg"
+       | _ -> failwith "Local functions not allowed"
 
                        
 /// CS vEnv fEnv s gives the code for a statement s on the basis of a variable and a function environment                          
@@ -145,9 +146,7 @@ module CodeGeneration =
 
        | Return (Some e) -> CE vEnv fEnv e @ [RET (snd vEnv)] (* MicroC inspired *)
 
-       | Call (f, es) -> callfun f es vEnv fEnv (* MicroC inspired *)
-
-       | _                -> failwith "CS: this statement is not supported yet"
+       | Call (f, es) -> callfun f es vEnv fEnv @ [INCSP -1] (* MicroC inspired *)
 
 
    and CSs vEnv fEnv stms = List.collect (CS vEnv fEnv) stms 

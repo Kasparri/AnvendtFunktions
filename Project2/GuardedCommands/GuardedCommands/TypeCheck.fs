@@ -102,8 +102,6 @@ module TypeCheck =
                                             else failwith "No function to return from"
 
                          | Call (name, es) -> tcNaryProcedure gtenv ltenv name es
-                                     
-                         | _              -> failwith "tcS: this statement is not supported yet"
 
    and tcGDec gtenv ltenv = function  
                       | VarDec(t,s)               -> match t with
