@@ -50,7 +50,7 @@ let fitlistl (es:Extent list) =
 let fitlistr (es:Extent list) =
     let rec fitlistr' acc = function
     | []      -> []
-    | (e::es) -> let x = - fit(acc,e)
+    | (e::es) -> let x = - fit(e,acc)
                  x :: (fitlistr' (merge ( moveextent(e,x), acc ) ) es)
     List.rev (fitlistr' [] (List.rev es))
 
@@ -126,7 +126,7 @@ let createFile (data:string) fileName =
 
 
 /// Tests
-let tree1 = Node("A", [Node("B",[Node("D",[])]);Node("C",[])] )
+let tree1 = Node("A", [Node("B",[Node("D",[]);Node("E",[])]);Node("C",[Node("F",[]);Node("G",[])]);Node("H",[])] )
 let tree2 = Node("A",[])
 
 design tree1;;
