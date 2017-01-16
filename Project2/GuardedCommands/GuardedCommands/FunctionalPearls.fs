@@ -121,11 +121,11 @@ module FunctionalPearls =
     let converttree tree = 
         let convertedTree = converttree' 0.0 0 tree
         let width = maxX-minX+100.0
-        let height = minY + 60
+        let height = minY - 60
         let start = ["%!";
                      "<</PageSize["+ string width + " " + string (-height)+"]/ImagingBBox null>> setpagedevice";
                      "1 1 scale";
-                     string (width/2.0) + " " + string (minY-10)+" translate";
+                     string (width/2.0) + " " + string (-height-10)+" translate";
                      "newpath";
                      "/Times-Roman findfont 10 scalefont setfont"]
 
