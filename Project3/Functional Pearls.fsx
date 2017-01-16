@@ -2,6 +2,9 @@
 /// Kasper L. Sørensen & Mads E. Maibohm
 /// s144453              s144479
 
+open System.IO
+open System.Diagnostics
+
 
 /// 2. Representing trees
 type 'a Tree = Node of 'a * ('a Tree list)
@@ -73,33 +76,36 @@ let design tree = fst(design' tree)
 
 /// Convert Trees to strings of PostScript format
 
-let moveto x y = string x + " " + string y + " moveto"
+let moveto x y = String.concat " " [string (x*100.0);string y;"moveto"]
 
-let lineto x y = string x + " " + string y + " lineto"
+let lineto x y = String.concat " " [string (x*100.0);string y;"lineto"]
 
-let drawName px d n i = [moveto (px + i) (-d*10-10);
-                         "(" + n + ") dup stringwidth pop 2 div neg 0 rmoveto show"]
+let checkName n = if (String.length n) > 15 then n.[0..14] else n
+
+let drawName px d n i = [moveto (px + i) (-d*80-10);
+                         String.concat "" ["(";(checkName n);") dup stringwidth pop 2 div neg 0 rmoveto show"]]
 
 let drawDown x ystart yend = [moveto x ystart;lineto x yend]
 
 let drawHorizontalBar xstart xend y = [moveto xstart y; lineto xend y]
 
 let extracti = function
-                 | Node((_,i),_) -> i
+               | Node((_,i),_) -> i
 
-let drawLayer x d kids = drawDown x (-d*10) (-d*10 - 20)
-                         @ drawHorizontalBar (extracti (List.head kids) + x) (extracti (List.last kids) + x) (-d*40 - 40)
-                         @ (List.fold (fun r (Node ((_,i),_)) -> r @ (drawDown (i+x) (-d*40-40) (-(d+1)*40-40))) [] kids)
-                            
+let drawLayer x d kids = List.concat[drawDown x (-d*80 - 20) (-d*80 - 40);
+                                     drawHorizontalBar (extracti (List.head kids) + x) (extracti (List.last kids) + x) (-d*80 - 40);
+                                     (List.fold (fun r (Node ((_,i),_)) -> r @ (drawDown (i+x) (-d*80-40) (-d*80-80))) [] kids)]
+                                            
 
-                          
+
 let rec converttree' px d = function
-    | Node ((n, i),[]  )  -> drawName (px*100.0) d n i
-    | Node ((n, i),kids)  -> drawName (px*100.0) d n i
-                             @ drawLayer ((px+i)*100.0) d kids
-                             @ List.fold (fun r k -> r @ converttree' ((px+i)*100.0) (d+1) k) [] kids
+    | Node ((n, i),[]  )  -> drawName (px) d n i
+    | Node ((n, i),kids)  -> List.concat[drawName (px) d n i;
+                                         drawLayer (px+i) d kids;
+                                         List.fold (fun r k -> r @ converttree' (px+i) (d+1) k) [] kids]
 
-                              
+
+
 let converttree tree = 
     let start = ["%!";
                  "<</PageSize[1400 1000]/ImagingBBox null>> setpagedevice";
@@ -108,10 +114,15 @@ let converttree tree =
                  "newpath";
                  "/Times-Roman findfont 10 scalefont setfont"]
 
-    let finish = ["showpage"]
-    String.concat " \n " (start @ (converttree' 0.0 0 tree) @ finish)
- 
+    let finish = ["stroke";"showpage"]
+    String.concat "\n" (List.concat[start;(converttree' 0.0 0 tree);finish])
 
+
+
+/// Writing PostScript to a file
+let createFile (data:string) fileName =
+    use streamWriter = new StreamWriter("Users/Kasper/Workspace/AnvendtFunktions/Project3/" + fileName + ".ps", false)
+    streamWriter.Write(data)
 
 
 /// Tests
@@ -127,8 +138,13 @@ let postree2 = design tree2;;
 converttree postree1;;
 converttree postree2;;
 
+createFile (converttree postree1) "test123";;
+
+
+
+
 (*
-Used for extent testing
+// Used for extent testing
 let ext1 = [(1.0,1.0);(2.0,2.0)]
 let ext2 = [(0.0,22.32)]
 let ext3 = []
