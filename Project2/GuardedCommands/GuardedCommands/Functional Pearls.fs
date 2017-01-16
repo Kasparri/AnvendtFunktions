@@ -52,7 +52,7 @@ module FunctionalPearls =
     let fitlistr (es:Extent list) =
         let rec fitlistr' acc = function
         | []      -> []
-        | (e::es) -> let x = - fit(e,acc)
+        | (e::es) -> let x = - fit(acc,e)
                      x :: (fitlistr' (merge ( moveextent(e,x), acc ) ) es)
         List.rev (fitlistr' [] (List.rev es))
 
@@ -123,8 +123,7 @@ module FunctionalPearls =
 
     /// Writing PostScript to a file
     let createFile (data:string) fileName =
-        //use streamWriter = new StreamWriter("Users/Kasper/Workspace/AnvendtFunktions/Project3/" + fileName + ".ps", false)
-        use streamWriter = new StreamWriter("C:\\Users\\Mads_\\OneDrive\\Documents\\Visual Studio 2015\\Projects\\AnvendtFunktions\\Project3\\" + fileName + ".ps", false)
+        use streamWriter = new StreamWriter("Users/Kasper/Workspace/AnvendtFunktions/Project3/" + fileName + ".ps", false)
         streamWriter.Write(data)
 
 
