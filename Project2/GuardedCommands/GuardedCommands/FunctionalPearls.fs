@@ -92,7 +92,8 @@ module FunctionalPearls =
     let lineto x y = checkBounds (x*100.0) y
                      String.concat " " [string (x*100.0);string y;"lineto"]
 
-    let checkName n = if (String.length n) > 15 then n.[0..14] else n
+    let checkName n = if (String.length n) > 15 then n.[0..12]+"..." else n
+
 
     let drawName px d n i = [moveto (px + i) (-d*80-10);
                              String.concat "" ["(";(checkName n);") dup stringwidth pop 2 div neg 0 rmoveto show"]]

@@ -46,26 +46,42 @@ let rec randomTree = function
         | 0 -> Node("Leaf",[])
         | d -> Node("A",[randomTree(d-1);randomTree(d-1)])
 
+let compileToFile prog name = let parsed = parseFromFile prog
+                              let tree = treeFromProgram parsed
+                              let design = design tree
+                              createFile (converttree design) name;;
 
-let ex0Tree = parseFromFile "Ex2.gc";;
+
+
+let simpleTree = Node("A",[Node("B",[]);Node("C",[])]);;
+let desSimple = design simpleTree;;
+let _ = createFile (converttree desSimple) "Simple";;
+
+
+let ex0Prog = parseFromFile "Ex1.gc";;
+let ex0Tree = treeFromProgram ex0Prog;;
+let ex0Design = design ex0Tree;;
+let _ = createFile (converttree ex0Design) "Ex1";;
+
+let factProg = parseFromFile "fact.gc";;
+let factTree = treeFromProgram factProg;;
+let factDesign = design factTree;;
+let _ = createFile (converttree factDesign) "fact";;
+
+let qsProg = parseFromFile "QuickSortV1.gc";;
+let qsTree = treeFromProgram qsProg;;
+let qsDesign = design qsTree;;
+let _ = createFile (converttree qsDesign) "QuickSort";;
 
 
 
-
-
-let _ = tcP ex0Tree;;
-
-let ex0Code = CP ex0Tree;; 
-
-let _ = go ex0Tree;;
-
-let abc = treeFromProgram ex0Tree;;
-
-let def = design abc;;
-
-let _ = createFile (converttree def) "EX2";;
-
-let _ = goTrace ex0Tree;;
+//let _ = tcP ex0Tree;;
+//
+//let ex0Code = CP ex0Tree;; 
+//
+//let _ = go ex0Tree;;
+//
+//let _ = goTrace ex0Tree;;
 
 
 // Parsing of Ex1.gc
